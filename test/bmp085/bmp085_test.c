@@ -5,7 +5,7 @@
 
 int main(int argc, char **argv)
 {
-	int bus, temp, pressure;
+	int bus, temp, pressure, version, id;
 	bmp085_device sensor;
 	
 	if ((bus = i2c_open(0)) < 0) {
@@ -16,7 +16,11 @@ int main(int argc, char **argv)
 	if (bmp085_init(bus, &sensor) < 0) {
 		perror("Failed to initialize sensor");
 	}
-
+	
+	id = bmp085_read_chip_id(&sensor);
+	version = bmp085_read_chip_version(&sensor);
+	printf("Chip Id: %d, Version: %d\n", id, version);
+	
 	temp = bmp085_read_temperature(&sensor);
 	pressure = bmp085_read_pressure(&sensor);
 	

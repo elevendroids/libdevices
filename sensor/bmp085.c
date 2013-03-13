@@ -115,3 +115,26 @@ int bmp085_read_pressure(bmp085_device *device)
 	return p;
 }
 
+int bmp085_read_chip_id(bmp085_device *device)
+{
+	int status;
+	uint8_t id;
+	status = i2c_read_reg_byte(device->bus, BMP085_ADDR, 0xD0, &id);
+	if (status < 0) {
+		return status;
+	} else {
+		return id;
+	}
+}
+
+int bmp085_read_chip_version(bmp085_device *device)
+{
+	int status;
+	uint8_t version;
+	status = i2c_read_reg_byte(device->bus, BMP085_ADDR, 0xD1, &version);
+	if (status < 0) {
+		return status;
+	} else {
+		return version;
+	}
+}
