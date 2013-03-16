@@ -2,20 +2,19 @@
 #define BMP085_H
 
 #include <stdint.h>
+#include "bus/i2c.h"
 
 #define BMP085_ADDR 0x77
 
-typedef struct {
-	int bus;
-	uint8_t calibration_data[22];
-	int32_t b5;
-} bmp085_device;
+#define BMP085_SAMPLES_1 0
+#define BMP085_SAMPLES_2 1
+#define BMP085_SAMPLES_4 2
+#define BMP085_SAMPLES_8 3
 
-extern int bmp085_init(int bus, bmp085_device *device);
-
-extern int bmp085_read_pressure(bmp085_device *device);
-extern int bmp085_read_temperature(bmp085_device *device);
-int bmp085_read_chip_id(bmp085_device *device);
-int bmp085_read_chip_version(bmp085_device *device);
+extern int Bmp085_Init(I2cDevice *device);
+extern int Bmp085_ReadPressure(I2cDevice *device, uint8_t oversampling);
+extern int Bmp085_ReadTemperature(I2cDevice *device);
+int Bmp085_ReadChipId(I2cDevice *device);
+int Bmp085_ReadChipVersion(I2cDevice *device);
 
 #endif

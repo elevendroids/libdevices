@@ -6,26 +6,23 @@
 int main(int argc, char **argv)
 {
 	int bus, temp, pressure, version, id;
-	bmp085_device sensor;
+	I2cDevice sensor = { .address = 0x77 };
 	
-	if ((bus = i2c_open(0)) < 0) {
+	if ((bus = I2c_Open(0)) < 0) {
 		perror("Unable to open i2c device file");
 		return 1;
 	}
+	sensor.bus = bus;
 
-	if (bmp085_init(bus, &sensor) < 0) {
-		perror("Failed to initialize sensor");
-	}
-	
-	id = bmp085_read_chip_id(&sensor);
-	version = bmp085_read_chip_version(&sensor);
+	id = Bmp085_ReadChipId(&sensor);
+	version = Bmp085_ReadChipVersion(&sensor);
 	printf("Chip Id: %d, Version: %d\n", id, version);
 	
-	temp = bmp085_read_temperature(&sensor);
-	pressure = bmp085_read_pressure(&sensor);
+	temp = Bmp085_ReadTemperature(&sensor);
+	pressure = Bmp085_ReadPressure(&sensor, BMP085_SAMPLES_8);
 	
 	printf("Temperature: %.1f C\n", temp / 10.0);
 	printf("Pressure: %.2f hPa\n", pressure / 100.0);
-	i2c_close(bus);
+	I2c_Close(bus);
 	return 0;
 }
