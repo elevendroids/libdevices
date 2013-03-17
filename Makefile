@@ -4,7 +4,9 @@ LDFLAGS=
 
 PLATFORM=linux
 
-SOURCES=$(wildcard bus/*.c) $(wildcard gpio/*.c) $(wildcard sensor/*.c) $(wildcard platform/$(PLATFORM)/*.c)
+SOURCES=$(wildcard bus/*.c) $(wildcard display/*.c) \
+	$(wildcard gpio/*.c) $(wildcard sensor/*.c) \
+	$(wildcard platform/$(PLATFORM)/*.c)
 OBJECTS=$(patsubst %.c, %.o, $(SOURCES))
 
 EXECUTABLE=test
