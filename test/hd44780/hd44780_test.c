@@ -6,34 +6,40 @@
 #include <stdio.h>
 #include "bits.h"
 
-I2cDevice lcd_adapter = { .address = 0x27 };
+static void LcdWrite(uint8_t data, uint8_t flags);
 
-void LcdBacklight(uint8_t value)
-{
-	if (value) {
-		Mcp23017_SetPinB(&lcd_adapter, BIT7);
-	} else {
-		Mcp23017_ResetPinB(&lcd_adapter, BIT7);
-	}
-}
+static const Hd44780Config display_config = {
+	.lines = 2,
+	.columns = 16,
+	.data_mode = HD44780_DATA_MODE_8,
+	.write_func = &LcdWrite
+};
+static Hd44780Device display = { &display_config };
 
-void LcdWrite(uint8_t data, uint8_t flags)
+static I2cDevice lcd_adapter = { .address = 0x27 };
+
+static void LcdWrite(uint8_t data, uint8_t flags)
 {
 	uint8_t device_flags;
-	Mcp23017_WritePortA(&lcd_adapter, data);
+	Mcp23x17Data lcd_data;
+
 	device_flags = 0;
 	if (flags & HD44780_FLAG_E)
 		device_flags |= BIT4;
 	if (flags & HD44780_FLAG_WR)
 		device_flags |= BIT5;
 	if (flags & HD44780_FLAG_RS)
-		device_flags |= BIT6;		
-	Mcp23017_WritePortB(&lcd_adapter, device_flags );
+		device_flags |= BIT6;
+
+	lcd_data.bytes[0] = data;
+	lcd_data.bytes[1] = device_flags | BIT7;
+	Mcp23017_WriteData(&lcd_adapter, lcd_data);
 }
 
 int main(int argc, char **argvc)
 {
 	int bus;
+
 	bus = I2c_Open(0);
 	if (bus < 0) {
 		return bus;
@@ -43,12 +49,11 @@ int main(int argc, char **argvc)
 	Mcp23017_WriteRegister(&lcd_adapter, MCP23X17_SEQ_IODIRA, 0x00);
 	Mcp23017_WriteRegister(&lcd_adapter, MCP23X17_SEQ_IODIRB, 0x00);
 
-	Hd44780_Init(2, 16, HD44780_DATA_MODE_8, &LcdWrite);
-	Hd44780_Clear();
-	Hd44780_SetCursorPos(0, 0);
-	Hd44780_PutString("Hello");
-	Hd44780_SetCursorPos(1, 0);
-	Hd44780_PutString("world!!!");
+	Hd44780_Init(&display);
+	Hd44780_SetCursorPos(&display, 0, 0);
+	Hd44780_PutString(&display, "Hello");
+	Hd44780_SetCursorPos(&display, 1, 0);
+	Hd44780_PutString(&display, "world!!!");
 	I2c_Close(bus);
 	return 0;
 }
