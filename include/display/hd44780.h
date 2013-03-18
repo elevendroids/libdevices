@@ -45,13 +45,32 @@
 
 typedef void Hd44780WriteFunc(uint8_t data, uint8_t flags);
 
-void Hd44780_Init(uint8_t lines, uint8_t columns, uint8_t data_mode, Hd44780WriteFunc *write_func);
-void Hd44780_Clear(void);
+typedef struct {
+	uint8_t lines;
+	uint8_t columns;
+	uint8_t data_mode;
+	Hd44780WriteFunc *write_func;
+} Hd44780Config;
+
+typedef struct {
+	const Hd44780Config *config;
+	uint8_t display_control;
+} Hd44780Device;
+
+void Hd44780_Init(Hd44780Device *device);
+void Hd44780_Clear(Hd44780Device *device);
 void Hd44780_ClearLine(uint8_t line);
-void Hd44780_SetCursorPos(uint8_t line, uint8_t column);
-void Hd44780_PutChar(char c);
-void Hd44780_PutStringC(char *s, uint8_t count);
-void Hd44780_PutString(char *s);
+void Hd44780_SetCursorPos(Hd44780Device *device, const uint8_t line, const uint8_t column);
+void Hd44780_PutChar(Hd44780Device *device, const char c);
+void Hd44780_PutStringC(Hd44780Device *device, char *s, uint8_t count);
+void Hd44780_PutString(Hd44780Device *device, char *s);
+
+void Hd44780_DisplayOn(Hd44780Device *device);
+void Hd44780_DisplayOff(Hd44780Device *device);
+
+void Hd44780_CursorOn(Hd44780Device *device);
+void Hd44780_CursorOff(Hd44780Device *device);
+
 //void HD44780_set_font_char(char index, char *data);
 
 #endif
