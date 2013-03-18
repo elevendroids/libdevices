@@ -55,4 +55,9 @@
 #define MCP23X17_SEQ_OLATA	0x14
 #define MCP23X17_SEQ_OLATB	0x15
 
+typedef union {
+	uint8_t as_bytes[2];
+	uint16_t as_word;
+} Mcp23x17PortsData;
+
 #endif
