@@ -21,7 +21,7 @@ static I2cDevice lcd_adapter = { .address = 0x27 };
 static void LcdWrite(uint8_t data, uint8_t flags)
 {
 	uint8_t device_flags;
-	Mcp23x17Data lcd_data;
+	Mcp23x17PortsData lcd_data;
 
 	device_flags = 0;
 	if (flags & HD44780_FLAG_E)
@@ -31,9 +31,9 @@ static void LcdWrite(uint8_t data, uint8_t flags)
 	if (flags & HD44780_FLAG_RS)
 		device_flags |= BIT6;
 
-	lcd_data.bytes[0] = data;
-	lcd_data.bytes[1] = device_flags | BIT7;
-	Mcp23017_WriteData(&lcd_adapter, lcd_data);
+	lcd_data.as_bytes[0] = data;
+	lcd_data.as_bytes[1] = device_flags | BIT7;
+	Mcp23017_WritePorts(&lcd_adapter, lcd_data);
 }
 
 int main(int argc, char **argvc)
