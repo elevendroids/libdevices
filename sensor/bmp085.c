@@ -12,12 +12,12 @@ typedef uint8_t CalibrationData[CALIBRATION_DATA_LEN];
 
 static const uint8_t wait_time_ms[] = { 5, 8, 14, 26 };
 
-int Bmp085_ReadCalibrationData(I2cDevice *device, CalibrationData *data)
+static inline int Bmp085_ReadCalibrationData(I2cDevice *device, CalibrationData *data)
 {
 	return I2c_ReadRegister(device, 0xAA, data, CALIBRATION_DATA_LEN);
 }
 
-int Bmp085_ReadTemperatureRef(I2cDevice *device, CalibrationData *calibration, int32_t *value)
+static int Bmp085_ReadTemperatureRef(I2cDevice *device, CalibrationData *calibration, int32_t *value)
 {
 	int status;
 	uint8_t data[2];
