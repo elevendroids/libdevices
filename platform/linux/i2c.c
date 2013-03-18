@@ -54,7 +54,7 @@ extern int I2c_WriteRegister(I2cDevice *device, uint8_t reg, void *buffer, uint8
 	uint8_t *buf;
 	uint8_t buf_len;
 	struct i2c_rdwr_ioctl_data data;
-	struct i2c_msg messages[1];
+	struct i2c_msg message;
 
 	buf_len = len + sizeof(reg);
 
@@ -62,12 +62,12 @@ extern int I2c_WriteRegister(I2cDevice *device, uint8_t reg, void *buffer, uint8
 	buf[0] = reg;
 	memcpy(&buf[1], buffer, len);
 	
-	messages[0].addr = device->address;
-	messages[0].flags = 0;
-	messages[0].len = buf_len;
-	messages[0].buf = buf;
+	message.addr = device->address;
+	message.flags = 0;
+	message.len = buf_len;
+	message.buf = buf;
 	
-	data.msgs = messages;
+	data.msgs = &message;
 	data.nmsgs = 1;
 
 	status = ioctl(device->bus, I2C_RDWR, &data);
