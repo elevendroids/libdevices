@@ -43,13 +43,13 @@
 #define HD44780_FLAG_RS			0x02
 #define HD44780_FLAG_WR			0x04
 
-typedef void Hd44780WriteFunc(uint8_t data, uint8_t flags);
+typedef void (*Hd44780WriteFunc)(const uint8_t data, const uint8_t flags);
 
 typedef struct {
 	uint8_t lines;
 	uint8_t columns;
 	uint8_t data_mode;
-	Hd44780WriteFunc *write_func;
+	const Hd44780WriteFunc write_func;
 } Hd44780Config;
 
 typedef struct {

@@ -7,8 +7,8 @@ ifeq ($(PLATFORM),msp430)
 	OBJDUMP=msp430-objdump
 endif
 
-CFLAGS=-Os -Wall -I../../include -ffunction-sections -fdata-sections
-LDFLAGS=-L../../ -ldevices -Wl,--gc-sections,-Map=mapfile.map
+CFLAGS=-O2 -Wall -I../../include -ffunction-sections -fdata-sections
+LDFLAGS=-L../../ -ldevices -Wl,--gc-sections,-Map=$(EXECUTABLE).map
 SOURCES=hd44780_test.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=hd44780_test
@@ -23,5 +23,5 @@ clean:
 	rm -rf *.o $(EXECUTABLE)
 
 dump:
-	$(OBJDUMP) -d $(EXECUTABLE) > $(EXECUTABLE).asm
+	$(OBJDUMP) -d $(EXECUTABLE) > $(EXECUTABLE).dump
 

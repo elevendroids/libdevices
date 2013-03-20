@@ -4,19 +4,18 @@
 #include "display/hd44780.h"
 #include "bits.h"
 
-static void LcdWrite(uint8_t data, uint8_t flags);
+static void LcdWrite(const uint8_t data, const uint8_t flags);
 
 static const Hd44780Config display_config = {
 	.lines = 2,
 	.columns = 16,
 	.data_mode = HD44780_DATA_MODE_8,
-	.write_func = &LcdWrite
+	.write_func = LcdWrite
 };
 static Hd44780Device display = { &display_config };
-
 static I2cDevice lcd_adapter = { .address = 0x27 };
 
-static void LcdWrite(uint8_t data, uint8_t flags)
+static void LcdWrite(const uint8_t data, const uint8_t flags)
 {
 	uint8_t device_flags;
 	Mcp23x17PortsData lcd_data;
@@ -30,7 +29,7 @@ static void LcdWrite(uint8_t data, uint8_t flags)
 		device_flags |= BIT6;
 
 	lcd_data.as_bytes[0] = data;
-	lcd_data.as_bytes[1] = device_flags | BIT7;
+	lcd_data.as_bytes[1] = device_flags ;
 	Mcp23017_WritePorts(&lcd_adapter, lcd_data);
 }
 
@@ -48,6 +47,7 @@ int main(int argc, char **argvc)
 	Mcp23017_WriteRegister(&lcd_adapter, MCP23X17_SEQ_IODIRB, 0x00);
 
 	Hd44780_Init(&display);
+	Hd44780_Clear(&display);
 	Hd44780_SetCursorPos(&display, 0, 0);
 	Hd44780_PutString(&display, "Hello");
 	Hd44780_SetCursorPos(&display, 1, 0);
