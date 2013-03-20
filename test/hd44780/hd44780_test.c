@@ -2,8 +2,6 @@
 #include "gpio/mcp23x17.h"
 #include "gpio/mcp23017.h"
 #include "display/hd44780.h"
-#include <unistd.h>
-#include <stdio.h>
 #include "bits.h"
 
 static void LcdWrite(uint8_t data, uint8_t flags);
