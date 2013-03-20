@@ -1,4 +1,3 @@
-#include <unistd.h>
 #include "sensor/bmp085.h"
 #include "bus/i2c.h"
 #include "delay.h"
@@ -99,7 +98,7 @@ int Bmp085_ReadPressure(I2cDevice *device, uint8_t oversampling)
 		return status;
 	}
 	
-	up = ((data[0] << 16) + (data[1] << 8) + data[0]) >> (8 - oversampling);
+	up = (((int32_t)data[0] << 16) + ((int32_t)data[1] << 8) + data[0]) >> (8 - oversampling);
 
 	ac1 = get_short(calibration, 0);
 	ac2 = get_short(calibration, 2);
