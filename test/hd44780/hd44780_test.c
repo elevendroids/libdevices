@@ -7,8 +7,7 @@
 static void LcdWrite(const uint8_t data, const uint8_t flags);
 
 static const Hd44780Config display_config = {
-	.lines = 2,
-	.columns = 16,
+	.format = HD44780_FORMAT_2x16,
 	.data_mode = HD44780_DATA_MODE_8,
 	.write_func = LcdWrite
 };
@@ -29,7 +28,7 @@ static void LcdWrite(const uint8_t data, const uint8_t flags)
 		device_flags |= BIT6;
 
 	lcd_data.as_bytes[0] = data;
-	lcd_data.as_bytes[1] = device_flags ;
+	lcd_data.as_bytes[1] = device_flags | BIT7;
 	Mcp23017_WritePorts(&lcd_adapter, lcd_data);
 }
 

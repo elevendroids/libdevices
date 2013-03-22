@@ -35,7 +35,8 @@ void Hd44780_Clear(Hd44780Device *device) {
 }
 
 void Hd44780_SetCursorPos(Hd44780Device *device, const uint8_t line, const uint8_t column) {
-	uint8_t address = ((line & 0x01) << 6) + ((line & 0x02) << 3) + column;
+//	uint8_t address = ((line & 0x01) << 6) + ((line & 0x02) << 3) + column;
+	uint8_t address = HD44780_FORMATS[device->config->format].addresses[line] | column;
 	Hd44780_Write(device, HD44780_CMD_SET_ADDRESS | address, 0x00);
 }
 

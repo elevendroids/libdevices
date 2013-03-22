@@ -43,11 +43,39 @@
 #define HD44780_FLAG_RS			0x02
 #define HD44780_FLAG_WR			0x04
 
-typedef void (*Hd44780WriteFunc)(const uint8_t data, const uint8_t flags);
+// Display format
+#define HD44780_FORMAT_1x16		0x00
+#define HD44780_FORMAT_1x20		0x01
+#define HD44780_FORMAT_1x40		0x02
+#define HD44780_FORMAT_2x16		0x03
+#define HD44780_FORMAT_2x20		0x04
+#define HD44780_FORMAT_2x40		0x05
+#define HD44780_FORMAT_4x16		0x06
+#define HD44780_FORMAT_4x20		0x07
+
 
 typedef struct {
 	uint8_t lines;
 	uint8_t columns;
+	uint8_t addresses[4];
+} Hd44780Format;
+
+static const Hd44780Format HD44780_FORMATS[] = {
+	{1, 16, {0x00, 0x00, 0x00, 0x00}},
+	{1, 20, {0x00, 0x00, 0x00, 0x00}},
+	{1, 40, {0x00, 0x00, 0x00, 0x00}},
+	{2, 16, {0x00, 0x40, 0x00, 0x00}},
+	{2, 20, {0x00, 0x40, 0x00, 0x00}},
+	{2, 40, {0x00, 0x40, 0x00, 0x00}},
+	{4, 16, {0x00, 0x40, 0x10, 0x50}},
+	{4, 20, {0x00, 0x40, 0x14, 0x54}}
+};
+
+
+typedef void (*Hd44780WriteFunc)(const uint8_t data, const uint8_t flags);
+
+typedef struct {
+	uint8_t format;
 	uint8_t data_mode;
 	const Hd44780WriteFunc write_func;
 } Hd44780Config;
