@@ -34,17 +34,17 @@ int Mcp23017_ReadPorts(I2cDevice *device, Mcp23x17PortsData *data)
 
 int Mcp23017_WritePortA(I2cDevice *device, uint8_t value)
 {
-	return I2c_WriteRegisterByte(device, MCP23X17_SEQ_OLATA, value);
+	return I2c_WriteRegister(device, MCP23X17_SEQ_GPIOA, &value, sizeof(value));
 }
 
 int Mcp23017_WritePortB(I2cDevice *device, uint8_t value)
 {
-	return I2c_WriteRegisterByte(device, MCP23X17_SEQ_OLATB, value);
+	return I2c_WriteRegister(device, MCP23X17_SEQ_GPIOB, &value, sizeof(value));
 }
 
 int Mcp23017_WritePorts(I2cDevice *device, Mcp23x17PortsData data)
 {
-	return I2c_WriteRegister(device, MCP23X17_SEQ_OLATA, &data.as_word, sizeof(data.as_word));
+	return I2c_WriteRegister(device, MCP23X17_SEQ_GPIOA, &data, sizeof(data));
 }
 
 int Mcp23017_SetPinA(I2cDevice *device, uint8_t pin)
