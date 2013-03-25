@@ -11,10 +11,10 @@ static void _lcd_write8(Hd44780WriteFunc write_func, const uint8_t data, const u
 static inline void _lcd_write4(Hd44780WriteFunc write_func, const uint8_t data, const uint8_t flags)
 {
 	uint8_t nibble;
-	nibble = (data & 0xF0);
+	nibble = (data >> 0x04);
 	_lcd_write8(write_func, nibble, flags);
 
-	nibble = (data << 4);
+	nibble = (data & 0x0F);
 	_lcd_write8(write_func, nibble, flags);
 }
 
@@ -26,7 +26,7 @@ static void Hd44780_Write(Hd44780Device *device, const uint8_t data, const uint8
 		_lcd_write4(write_func, data, flags);
 	else
 		_lcd_write8(write_func, data, flags);
-	delay_us(40);
+	delay_us(50);
 }
 
 void Hd44780_Clear(Hd44780Device *device) {
@@ -35,8 +35,7 @@ void Hd44780_Clear(Hd44780Device *device) {
 }
 
 void Hd44780_SetCursorPos(Hd44780Device *device, const uint8_t line, const uint8_t column) {
-//	uint8_t address = ((line & 0x01) << 6) + ((line & 0x02) << 3) + column;
-	uint8_t address = HD44780_FORMATS[device->config->format].addresses[line] | column;
+	uint8_t address = HD44780_ADDRESSES[device->config->format][line] | column;
 	Hd44780_Write(device, HD44780_CMD_SET_ADDRESS | address, 0x00);
 }
 
@@ -85,9 +84,9 @@ void Hd44780_Init(Hd44780Device *device)
 	Hd44780_Write(device, HD44780_CMD_FUNC_SET | HD44780_DATA_MODE_8, 0x00);
 	delay_ms(5);
 	Hd44780_Write(device, HD44780_CMD_FUNC_SET | HD44780_DATA_MODE_8, 0x00);
-	delay_us(500);
+	delay_us(200);
 	Hd44780_Write(device, HD44780_CMD_FUNC_SET | config->data_mode, 0x00);
-	delay_ms(100);
+//	delay_us(100);
 	Hd44780_Write(device, HD44780_CMD_FUNC_SET | config->data_mode | HD44780_LINES_2 | HD44780_FONT_5x8, 0x00);
 
 	Hd44780_DisplayOn(device);
