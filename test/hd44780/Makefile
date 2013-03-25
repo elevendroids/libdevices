@@ -4,6 +4,7 @@ PLATFORM=linux
 
 ifeq ($(PLATFORM),msp430)
 	CC=msp430-gcc -mmcu=msp430g2553
+	LD=msp430-ld -mmcu=msp430g2553
 	OBJDUMP=msp430-objdump
 endif
 
@@ -23,5 +24,5 @@ clean:
 	rm -rf *.o $(EXECUTABLE)
 
 dump:
-	$(OBJDUMP) -d $(EXECUTABLE) > $(EXECUTABLE).dump
+	$(OBJDUMP) -g -d $(EXECUTABLE) > $(EXECUTABLE).dump
 
