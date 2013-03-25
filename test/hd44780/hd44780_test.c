@@ -3,6 +3,8 @@
 #include "gpio/mcp23017.h"
 #include "display/hd44780.h"
 #include "bits.h"
+//TODO: MSP430 specific header - remove
+#include <msp430.h>
 
 static void LcdWrite(const uint8_t data, const uint8_t flags);
 
@@ -29,12 +31,20 @@ static void LcdWrite(const uint8_t data, const uint8_t flags)
 
 	lcd_data.as_bytes[0] = data;
 	lcd_data.as_bytes[1] = device_flags | BIT7;
+	
 	Mcp23017_WritePorts(&lcd_adapter, lcd_data);
 }
 
 int main(int argc, char **argvc)
 {
 	int bus;
+	
+	//TODO: MSP430 Launchpad specific code - move to board initialization
+	WDTCTL = WDTPW + WDTHOLD;
+	BCSCTL1 = CALBC1_8MHZ;
+        DCOCTL = CALDCO_8MHZ;
+	__enable_interrupt();
+	//
 
 	bus = I2c_Open(0);
 	if (bus < 0) {
@@ -44,6 +54,7 @@ int main(int argc, char **argvc)
 	
 	Mcp23017_WriteRegister(&lcd_adapter, MCP23X17_SEQ_IODIRA, 0x00);
 	Mcp23017_WriteRegister(&lcd_adapter, MCP23X17_SEQ_IODIRB, 0x00);
+	Mcp23017_WritePortB(&lcd_adapter, 0x80);
 
 	Hd44780_Init(&display);
 	Hd44780_Clear(&display);
@@ -51,6 +62,7 @@ int main(int argc, char **argvc)
 	Hd44780_PutString(&display, "Hello");
 	Hd44780_SetCursorPos(&display, 1, 0);
 	Hd44780_PutString(&display, "world!!!");
+	
 	I2c_Close(bus);
 	return 0;
 }
