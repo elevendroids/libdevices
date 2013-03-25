@@ -1,11 +1,17 @@
-void delay_us(unsigned int useconds)
+#include <msp430.h>
+
+inline void delay_us(unsigned int useconds)
 {
-//	usleep(useconds);
+	do {
+		__delay_cycles(1 * 8);
+	} while (--useconds);
 }
 
-void delay_ms(unsigned int mseconds)
+inline void delay_ms(unsigned int mseconds)
 {
-//	usleep(mseconds * 1000);
+	while(mseconds--) {
+		__delay_cycles(1000 * 8);
+	}
 }
 
 
