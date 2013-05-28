@@ -13,6 +13,30 @@ void I2c_Close(int bus)
 {
 }
 
+int I2c_Read(I2cDevice *device, void *buffer, uint8_t len)
+{
+	UsciMessage message;
+	UsciTransaction transaction = { .messages = &message, .message_count = 1 };
+
+	message.data = buffer;
+	message.length = len;
+	message.flags = USCI_MESSAGE_DIR_READ;
+
+	return UsciB_I2cTransaction(device->address, &transaction);
+}
+
+int I2c_Write(I2cDevice *device, void *buffer, uint8_t len)
+{
+	UsciMessage message;
+	UsciTransaction transaction = { .messages = &message, .message_count = 1 };
+
+	message.data = buffer;
+	message.length = len;
+	message.flags = USCI_MESSAGE_DIR_WRITE;
+
+	return UsciB_I2cTransaction(device->address, &transaction);
+}
+
 int I2c_WriteThenRead(I2cDevice *device, void *tx_buf, uint8_t tx_len, void *rx_buf, uint8_t rx_len)
 {
 	UsciMessage messages[2];

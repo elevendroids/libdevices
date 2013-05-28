@@ -14,6 +14,10 @@
 // otherwise, a restart condition will be send before the message
 #define USCI_I2C_NO_RESTART	0x04
 
+// I2C - append next message
+// SPI - keep device selected between messages
+#define USCI_MESSAGE_PARTIAL	0x04
+
 // structures for synchronous operation (SPI, I2C)
 typedef struct {
 	uint8_t *data;
