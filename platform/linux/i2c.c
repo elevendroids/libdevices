@@ -33,7 +33,7 @@
 
 #define I2C_BUS_DEVICE "/dev/i2c-%d"
 
-int I2c_Open(uint8_t device)
+int I2c_Open(uint8_t device, uint8_t speed)
 {
 	char file_name[255];
 	snprintf(file_name, sizeof(file_name), I2C_BUS_DEVICE, device);

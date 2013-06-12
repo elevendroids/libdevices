@@ -25,7 +25,7 @@
 #include "platform/msp430/usci.h"
 
 
-int I2c_Open(uint8_t device)
+int I2c_Open(uint8_t device, uint8_t speed)
 {
 	USCIB_I2cInit(20);
 	return 0;
