@@ -32,11 +32,10 @@ uint8_t	Msp430_currentClock = 0;
 void Msp430_SetClock(int clock)
 {
 	uint8_t bcs1, bcs2, dco;
-	
+	// set default MCLK and SMCLK dividers	
 	bcs2 = DIVM_0 | DIVS_0;
-	
-	__disable_interrupt();
 
+	__disable_interrupt();
 	switch (clock) {
 		case MSP430_CLOCK_1MHZ	: 
  			bcs1 = CALBC1_1MHZ;
@@ -75,10 +74,11 @@ void Msp430_SetClock(int clock)
 	}
 	Msp430_currentClock = clock;
 
-	// configure DCO, divide ACLK by 8
+	// configure base clock, divide ACLK by 8
 	BCSCTL1 = bcs1 | DIVA_3;
 	// set dividers
 	BCSCTL2 = bcs2;
+	// configure DCO
 	DCOCTL = dco;
 	__enable_interrupt();
 }
@@ -89,8 +89,10 @@ uint16_t Msp430_GetSupplyVoltage(void)
 	// first attempt - measure Vcc/2 with 1.5V reference (Vcc < 3V )
 	ADC10CTL0 = SREF_1 | REFON | ADC10SHT_2 | ADC10SR | ADC10ON;
 	ADC10CTL1 = INCH_11 | SHS_0 | ADC10DIV_0 | ADC10SSEL_0;
+	// start conversion and wait for it
 	ADC10CTL0 |= ENC | ADC10SC;
 	while (ADC10CTL1 & ADC10BUSY) ;
+	// stop conversion and turn off ADC
 	ADC10CTL0 &= ~ENC;
 	ADC10CTL0 &= ~(ADC10IFG | ADC10ON | REFON);
 	raw_value = ADC10MEM;
@@ -98,9 +100,11 @@ uint16_t Msp430_GetSupplyVoltage(void)
 	if (raw_value == 0x3ff) {
 		// switch range - use 2.5V reference (Vcc >= 3V)
 		ADC10CTL0 = SREF_1 | REF2_5V | REFON | ADC10SHT_2 | ADC10SR | ADC10ON;
+		// start conversion and wait for it
 		ADC10CTL0 |= ENC | ADC10SC;
 		while (ADC10CTL1 & ADC10BUSY) ;
 		raw_value = ADC10MEM;
+		// end conversion and turn off ADC
 		ADC10CTL0 &= ~ENC;
 		ADC10CTL0 &= ~(ADC10IFG | ADC10ON | REFON);
 		// convert value to mV
