@@ -1,19 +1,38 @@
+/*
+*
+* Copyright (c) 2013, Michal Potrzebicz <michal@elevendroids.com>
+* All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following
+* conditions are met:
+*
+*    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*      disclaimer.
+*    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
+*      disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+*  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+*  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+*  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*
+*/
 #include "sensor/bmp085.h"
 #include "bus/i2c.h"
 #include "delay.h"
 #include "byteswap.h"
-
-#define get_short(c, i) (int16_t) ((c[i] << 8) + c[i + 1])
-#define get_ushort(c, i) (uint16_t) ((c[i] << 8) + c[i + 1])
 
 typedef struct {
 	int16_t ac1, ac2, ac3;
 	int16_t b1, b2;
 	int16_t mb, mc, md;
 	uint16_t ac4, ac5, ac6;
-} CalibrationData1;
+} CalibrationData;
 
-static CalibrationData1 cal_data;
+static CalibrationData cal_data;
 
 static const uint8_t wait_time_ms[] = { 5, 8, 14, 26 };
 
