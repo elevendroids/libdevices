@@ -25,13 +25,15 @@
 
 #include <stdint.h>
 
-#define I2C_SPEED_STANDARD	0x00	// SCL = 100kHz
-#define I2C_SPEED_FAST		0x01	// SCL = 400kHz
-#define I2C_SPEED_HIGH		0x02	// SCL = 1.7MHz
+#define I2C_SPEED_DEFAULT	0x00	// use speed selected with I2c_Open()
+#define I2C_SPEED_STANDARD	0x01	// SCL = 100kHz
+#define I2C_SPEED_FAST		0x02	// SCL = 400kHz
+#define I2C_SPEED_HIGH		0x03	// SCL = 1.7MHz
 
 typedef struct {
 	int bus;
 	uint8_t address;
+	uint8_t speed;
 } I2cDevice;
 
 extern int I2c_Open(uint8_t device, uint8_t speed);

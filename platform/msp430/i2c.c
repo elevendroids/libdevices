@@ -22,12 +22,21 @@
 */
 #include <stdint.h>
 #include "bus/i2c.h"
+#include "platform/msp430/platform.h"
 #include "platform/msp430/usci.h"
 
 
 int I2c_Open(uint8_t device, uint8_t speed)
 {
-	USCIB_I2cInit(20);
+	// This code is optimized to use one simple division operation (inlined by the compiler).
+	// Prescale value = SMCLK(kHz) / SCL(kHz)
+	uint16_t temp;
+	if (speed == I2C_SPEED_STANDARD) {
+		temp = Msp430_cyclesPerMs; // leave as is for 100kHz
+	} else { // there's no highspeed mode available
+		temp = (Msp430_cyclesPerMs * 4); // multiply by 4 for 400kHz
+	}
+	USCIB_I2cInit(temp / 100);
 	return 0;
 }
 

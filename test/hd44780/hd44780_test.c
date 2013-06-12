@@ -170,7 +170,7 @@ int main(int argc, char **argvc)
 	P1DIR |=  BIT0;
 	//
 
-	bus = I2c_Open(0);
+	bus = I2c_Open(0, I2C_SPEED_FAST);
 	if (bus < 0) {
 		return bus;
 	}

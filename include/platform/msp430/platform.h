@@ -39,7 +39,7 @@ static const uint16_t _cyclesPerMs[] = {1000, 2000, 4000, 6000, 8000, 12000, 160
 static const uint8_t  _cyclesPerUs[] = {1, 2, 4, 6, 8, 12, 16};
 
 #define Msp430_cyclesPerMs	_cyclesPerMs[Msp430_currentClock]
-#define Msp430_cyclesPerUs	_cyclesPerMs[Msp430_currentClock]
+#define Msp430_cyclesPerUs	_cyclesPerUs[Msp430_currentClock]
 
 void Msp430_SetClock(int clock);
 uint16_t Msp430_GetSupplyVoltage(void);
