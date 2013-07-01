@@ -21,6 +21,9 @@
 *
 */
 #include <msp430.h>
+
+#ifdef __MSP430_HAS_USCI__
+
 #include <stdint.h>
 #include "platform/msp430/usci.h"
 
@@ -179,3 +182,6 @@ __interrupt void USCI_Receive(void)
 {
 	
 }
+
+#endif
+

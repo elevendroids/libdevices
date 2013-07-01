@@ -20,6 +20,11 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 */
+
+#include <msp430.h>
+
+#ifdef __MSP430_HAS_USCI__
+
 #include <stdint.h>
 #include "bus/i2c.h"
 #include "platform/msp430/platform.h"
@@ -100,4 +105,5 @@ int I2c_WriteRegister(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len)
 	return UsciB_I2cTransaction(device->address, &transaction);
 }
 
+#endif
 
