@@ -91,7 +91,12 @@ void Timer_SleepSec(unsigned interval)
 #pragma vector=TIMER0_A1_VECTOR
 __interrupt void OnTickTimer(void)
 {
+	#ifdef __MSP430_HAS_TA3__
 	if (TA0IV == TA0IV_TAIFG) {
+	#endif
+	#ifdef __MSP430_HAS_TA2__
+	if (TAIV == TAIV_TAIFG) {
+	#endif
 		intervalCounter--;
 		if (intervalCounter == 0) {
 			_BIC_SR_IRQ(LPM3_bits); // wake from LPM0-3
