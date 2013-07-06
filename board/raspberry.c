@@ -20,9 +20,10 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 */
+#include "delay.h"
 
 void Board_Init(void)
 {
-
+	Delay_Init();
 }
 

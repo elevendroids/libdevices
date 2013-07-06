@@ -23,8 +23,6 @@
 #ifndef USCI_H
 #define USCI_H
 
-#define TX_BUFFER_LEN 16
-
 // direction flags
 // SPI can simultanously transmit and receive data, 
 // so we allow to mark messages as write/read - buffer will be filled with received data
@@ -46,20 +44,14 @@ typedef struct {
 	uint8_t length;
 	uint8_t flags;	
 } UsciMessage;
-
-typedef struct {
-	UsciMessage *messages;
-	uint8_t message_count;
-} UsciTransaction;
 //
 
+extern void UsciB_I2cInit(void);
 
-void USCIB_I2cInit(uint8_t prescale);
+extern int UsciB_I2cTransaction(uint8_t address, UsciMessage *messages, uint8_t message_count);
+extern int UsciB_SpiTransaction(UsciMessage *messages, uint8_t message_count);
 
-int UsciB_I2cTransaction(uint8_t address, UsciTransaction *transaction);
-int UsciB_SpiTransaction(UsciTransaction *transaction , uint8_t count);
-
-void USCIA_Wait(void);
-void USCIB_Wait(void);
+extern void UsciA_SetPrescaler(uint8_t value);
+extern void UsciB_SetPrescaler(uint8_t value);
 
 #endif

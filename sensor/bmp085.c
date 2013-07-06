@@ -65,7 +65,7 @@ static int Bmp085_ReadTemperatureRef(I2cDevice *device, int32_t *value)
 	if (status != STATUS_OK) 
 		return status;
 
-	delay_ms(5);
+	Delay_Ms(5);
 	status = I2c_ReadRegister(device, 0xF6, &data, sizeof(data));
 	if (status != STATUS_OK)
 		return status;
@@ -107,7 +107,7 @@ int Bmp085_ReadPressure(I2cDevice *device, uint8_t oversampling, int32_t *value)
 	if (status != STATUS_OK) 
 		return status;
 
-	delay_ms(wait_time_ms[oversampling]);
+	Delay_Ms(wait_time_ms[oversampling]);
 	status = I2c_ReadRegister(device, 0xF6, &data, sizeof(data));
 	if (status != STATUS_OK)
 		return status;

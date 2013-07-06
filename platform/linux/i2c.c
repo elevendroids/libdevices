@@ -69,7 +69,7 @@ int I2c_WriteThenRead(I2cDevice *device, void *tx_buf, uint8_t tx_len, void *rx_
 	return status;
 }
 
-extern int I2c_WriteRegister(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len)
+int I2c_WriteThenWrite(I2cDevice *device, void *tx_buf1, uint8_t tx_len1, void *tx_buf2, uint8_t tx_len2)
 {
 	int status;
 	
@@ -78,11 +78,11 @@ extern int I2c_WriteRegister(I2cDevice *device, uint8_t reg, void *buffer, uint8
 	struct i2c_rdwr_ioctl_data data;
 	struct i2c_msg message;
 
-	buf_len = len + sizeof(reg);
+	buf_len = tx_len1 + tx_len2;
 
 	buf = (uint8_t *) malloc(buf_len);
-	buf[0] = reg;
-	memcpy(&buf[1], buffer, len);
+	memcpy(&buf[0], tx_buf1, tx_len1);
+	memcpy(&buf[tx_len1], tx_buf2, tx_len2);
 	
 	message.addr = device->address;
 	message.flags = 0;

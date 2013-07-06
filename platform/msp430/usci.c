@@ -32,10 +32,23 @@
 
 volatile UsciMessage *UsciB_message;
 volatile uint8_t UsciB_message_counter;
+
 volatile uint8_t *UsciB_data;
 volatile uint8_t UsciB_data_counter;
 
-void USCIB_I2cInit(uint8_t prescale)
+void UsciA_SetPrescaler(uint8_t value)
+{
+	UCA0BR0 = value;
+	UCA0BR1 = 0x00;
+}
+
+void UsciB_SetPrescaler(uint8_t value)
+{
+	UCB0BR0 = value;
+	UCB0BR1 = 0x00;
+}
+
+void UsciB_I2cInit(void)
 {
 	// Configure I2C pins
 	P1SEL 	|= BIT6 | BIT7;
@@ -43,22 +56,21 @@ void USCIB_I2cInit(uint8_t prescale)
 	
 	UCB0CTL1 = UCSSEL_2 + UCSWRST;
 	UCB0CTL0 = UCMST + UCMODE_3 + UCSYNC; 	// I2C master, synchronous
-	UCB0BR0 = prescale;
-	UCB0BR1 = 0x00;
+
 	UCB0CTL1 &= ~UCSWRST;
 	IE2 |= UCB0TXIE | UCB0RXIE;
 //	UCB0I2CIE |= UCNACKIE;
 }
 
-int UsciB_I2cTransaction(uint8_t address, UsciTransaction *transaction)
+int UsciB_I2cTransaction(uint8_t address, UsciMessage *messages, uint8_t message_count)
 {
 	while (UCB0STAT & UCBBUSY);
 	// Set slave address
 	UCB0I2CSA = address;
 	//
 
-	UsciB_message = transaction->messages;
-	UsciB_message_counter = transaction->message_count - 1;
+	UsciB_message = messages;
+	UsciB_message_counter = message_count - 1;
 	UsciB_data = UsciB_message->data;
 	UsciB_data_counter = UsciB_message->length;
 
@@ -77,6 +89,14 @@ int UsciB_I2cTransaction(uint8_t address, UsciTransaction *transaction)
 	return 0;
 }
 
+static void UsciB_NextMessage(void)
+{
+	UsciB_message_counter--;
+	UsciB_message++;
+	UsciB_data = UsciB_message->data;
+	UsciB_data_counter = UsciB_message->length;
+}
+
 static inline void UsciB_SpiMasterHandler()
 {
 	_NOP();
@@ -91,11 +111,7 @@ void UsciB_I2cRxHandler(void)
 	if (UsciB_data_counter == 0) {
 		// fetch next message, if any
 		if (UsciB_message_counter) {
-			UsciB_message_counter--;
-			UsciB_message++;
-			UsciB_data = UsciB_message->data;
-			UsciB_data_counter = UsciB_message->length;
-
+			UsciB_NextMessage();
 			// check next message's direction
 			if (UsciB_message->flags & USCI_MESSAGE_DIR_READ) {
 				// set RESTART condition if needed
@@ -111,8 +127,6 @@ void UsciB_I2cRxHandler(void)
 			} else {
 				UCB0CTL1 |= UCTR | UCTXSTT;
 			}
-		} else {
-			// no more data to read
 		}
 	// if there's only one byte left to read, set STOP condition
 	} else if ((UsciB_data_counter == 1) && (UsciB_message_counter == 0)) {
@@ -128,11 +142,7 @@ void UsciB_I2cTxHandler(void)
 	if (UsciB_data_counter == 0) {
 		// fetch next message, if any
 		if (UsciB_message_counter) {
-			UsciB_message_counter--;
-			UsciB_message++;
-			UsciB_data = UsciB_message->data;
-			UsciB_data_counter = UsciB_message->length;
-
+			UsciB_NextMessage();
 			// if direction has changed, issue restart in read mode and exit
 			if (UsciB_message->flags & USCI_MESSAGE_DIR_READ) {
 				UCB0CTL1 &= ~UCTR;
@@ -183,5 +193,5 @@ __interrupt void USCI_Receive(void)
 	
 }
 
-#endif
+#endif /* __MSP430_HAS_USCI__ */
 

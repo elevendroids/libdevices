@@ -20,23 +20,21 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 */
-#ifndef PLATFORM_H
-#define PLATFORM_H
+#ifndef MSP430_H
+#define MSP430_H
 
+#include <msp430.h>
 #include <stdint.h>
 
 #define MSP430_CLOCK_1MHZ	0x00
-#define MSP430_CLOCK_2MHZ	0x01	// 8MHz / 4
-#define MSP430_CLOCK_4MHZ	0x02	// 8MHz / 2
-#define MSP430_CLOCK_6MHZ	0x03	// 12MHz / 2
-#define MSP430_CLOCK_8MHZ	0x04
-#define MSP430_CLOCK_12MHZ	0x05
-#define MSP430_CLOCK_16MHZ	0x06
+#define MSP430_CLOCK_8MHZ	0x01
+#define MSP430_CLOCK_12MHZ	0x02
+#define MSP430_CLOCK_16MHZ	0x03
 
 extern uint8_t 	Msp430_currentClock;
 
-static const uint16_t _cyclesPerMs[] = {1000, 2000, 4000, 6000, 8000, 12000, 16000};
-static const uint8_t  _cyclesPerUs[] = {1, 2, 4, 6, 8, 12, 16};
+static const uint16_t _cyclesPerMs[] = {1000, 8000, 12000, 16000};
+static const uint8_t  _cyclesPerUs[] = {1, 8, 12, 16};
 
 #define Msp430_cyclesPerMs	_cyclesPerMs[Msp430_currentClock]
 #define Msp430_cyclesPerUs	_cyclesPerUs[Msp430_currentClock]
@@ -44,5 +42,5 @@ static const uint8_t  _cyclesPerUs[] = {1, 2, 4, 6, 8, 12, 16};
 void Msp430_SetClock(int clock);
 uint16_t Msp430_GetSupplyVoltage(void);
 
-#endif
+#endif /* MSP430_H */
 

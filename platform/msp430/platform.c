@@ -25,39 +25,19 @@
 #include <stdint.h>
 #include "delay.h"
 #include "timer.h"
-#include "platform/msp430/platform.h"
+#include "platform/msp430.h"
 
 uint8_t	Msp430_currentClock = 0;
 
 void Msp430_SetClock(int clock)
 {
-	uint8_t bcs1, bcs2, dco;
-	// set default MCLK and SMCLK dividers	
-	bcs2 = DIVM_0 | DIVS_0;
+	uint8_t bcs1, dco;
 
 	__disable_interrupt();
 	switch (clock) {
 		case MSP430_CLOCK_1MHZ	: 
  			bcs1 = CALBC1_1MHZ;
 			dco = CALDCO_1MHZ;
-			break;
-		case MSP430_CLOCK_2MHZ	:
-			bcs1 = CALBC1_8MHZ;
-			dco = CALDCO_8MHZ;
-			// divide SMCLK and MCLK by 4
-			bcs2 = DIVM_2 | DIVS_2;
-			break;
-		case MSP430_CLOCK_4MHZ	:
-			bcs1 = CALBC1_8MHZ;
-			dco = CALDCO_8MHZ;
-			// divide SMCLK and MCLK by 2
-			bcs2 = DIVM_1 | DIVS_1;
-			break;
-		case MSP430_CLOCK_6MHZ	:
-			bcs1 = CALBC1_12MHZ;
-			dco = CALDCO_12MHZ;
-			// divide SMCLK and MCLK by 2
-			bcs2 = DIVM_1 | DIVS_1;
 			break;
 		case MSP430_CLOCK_8MHZ	:
 			bcs1 = CALBC1_8MHZ;
@@ -76,10 +56,9 @@ void Msp430_SetClock(int clock)
 
 	// configure base clock, divide ACLK by 8
 	BCSCTL1 = bcs1 | DIVA_3;
-	// set dividers
-	BCSCTL2 = bcs2;
 	// configure DCO
 	DCOCTL = dco;
+	Delay_Init();
 	__enable_interrupt();
 }
 

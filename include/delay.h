@@ -23,7 +23,11 @@
 #ifndef DELAY_H
 #define DELAY_H
 
-void delay_us(unsigned int useconds);
-void delay_ms(unsigned int mseconds);
+typedef void (*DelayFunc)(unsigned int interval);
+
+extern DelayFunc Delay_Us;
+extern DelayFunc Delay_Ms;
+
+extern void Delay_Init(void);
 
 #endif

@@ -22,7 +22,7 @@
 */
 #include <msp430.h>
 #include <stdint.h>
-#include "platform/msp430/platform.h"
+#include "platform/msp430.h"
 
 static volatile unsigned intervalCounter = 0;
 

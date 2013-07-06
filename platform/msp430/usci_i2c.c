@@ -27,21 +27,13 @@
 
 #include <stdint.h>
 #include "bus/i2c.h"
-#include "platform/msp430/platform.h"
+#include "platform/msp430.h"
 #include "platform/msp430/usci.h"
-
 
 int I2c_Open(uint8_t device, uint8_t speed)
 {
-	// This code is optimized to use one simple division operation (inlined by the compiler).
-	// Prescale value = SMCLK(kHz) / SCL(kHz)
-	uint16_t temp;
-	if (speed == I2C_SPEED_STANDARD) {
-		temp = Msp430_cyclesPerMs; // leave as is for 100kHz
-	} else { // there's no highspeed mode available
-		temp = (Msp430_cyclesPerMs * 4); // multiply by 4 for 400kHz
-	}
-	USCIB_I2cInit(temp / 100);
+	UsciB_I2cInit();
+	I2c_SetSpeed(speed);
 	return 0;
 }
 
@@ -49,34 +41,45 @@ void I2c_Close(int bus)
 {
 }
 
+
+void I2c_SetSpeed(uint8_t speed)
+{
+	// This code is optimized to use one simple division operation (usually inlined by the compiler).
+	// Prescale value = SMCLK(kHz) / SCL(kHz)
+	uint16_t temp;
+	if (speed == I2C_SPEED_STANDARD) {
+		temp = Msp430_cyclesPerMs; // leave as is for 100kHz
+	} else { // there's no highspeed mode available
+		temp = (Msp430_cyclesPerMs / 4); // divide by 4 for 400kHz
+	}
+	UsciB_SetPrescaler(temp / 100);	
+}
+
 int I2c_Read(I2cDevice *device, void *buffer, uint8_t len)
 {
 	UsciMessage message;
-	UsciTransaction transaction = { .messages = &message, .message_count = 1 };
 
 	message.data = buffer;
 	message.length = len;
 	message.flags = USCI_MESSAGE_DIR_READ;
 
-	return UsciB_I2cTransaction(device->address, &transaction);
+	return UsciB_I2cTransaction(device->address, &message, 1);
 }
 
 int I2c_Write(I2cDevice *device, void *buffer, uint8_t len)
 {
 	UsciMessage message;
-	UsciTransaction transaction = { .messages = &message, .message_count = 1 };
 
 	message.data = buffer;
 	message.length = len;
 	message.flags = USCI_MESSAGE_DIR_WRITE;
 
-	return UsciB_I2cTransaction(device->address, &transaction);
+	return UsciB_I2cTransaction(device->address, &message, 1);
 }
 
 int I2c_WriteThenRead(I2cDevice *device, void *tx_buf, uint8_t tx_len, void *rx_buf, uint8_t rx_len)
 {
 	UsciMessage messages[2];
-	UsciTransaction transaction = { .messages = &messages[0], .message_count = 2 };
 
 	messages[0].data = tx_buf;
 	messages[0].length = tx_len;
@@ -86,24 +89,23 @@ int I2c_WriteThenRead(I2cDevice *device, void *tx_buf, uint8_t tx_len, void *rx_
 	messages[1].length = rx_len;
 	messages[1].flags = USCI_MESSAGE_DIR_READ;
 
-	return UsciB_I2cTransaction(device->address, &transaction);
+	return UsciB_I2cTransaction(device->address, &messages[0], 2);
 }
 
-int I2c_WriteRegister(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len)
+int I2c_WriteThenWrite(I2cDevice *device, void *tx_buf1, uint8_t tx_len1, void *tx_buf2, uint8_t tx_len2)
 {
 	UsciMessage messages[2];
-	UsciTransaction transaction = { .messages = &messages[0], .message_count = 2 };
 
-	messages[0].data = &reg;
-	messages[0].length = sizeof(reg);
+	messages[0].data = tx_buf1;
+	messages[0].length = tx_len1;
 	messages[0].flags = USCI_MESSAGE_DIR_WRITE;
 
-	messages[1].data = buffer;
-	messages[1].length = len;
+	messages[1].data = tx_buf2;
+	messages[1].length = tx_len2;
 	messages[1].flags = USCI_MESSAGE_DIR_WRITE | USCI_I2C_NO_RESTART;
 
-	return UsciB_I2cTransaction(device->address, &transaction);
+	return UsciB_I2cTransaction(device->address, &messages[0], 2);
 }
 
-#endif
+#endif /* __MSP430_HAS_USCI__ */
 
