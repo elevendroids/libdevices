@@ -1,16 +1,34 @@
-CC=gcc
-CFLAGS=-O2 -Wall -Iinclude -fdata-sections -ffunction-sections
-LDFLAGS=
+CFLAGS=-Os -Wall -Iinclude -fdata-sections -ffunction-sections -std=c99
 
-PLATFORM=linux
+# Default board
+BOARD=raspberry
+
+# Board-specific settings, assigning platform for a board
+
+ifeq ($(BOARD),raspberry)
+	PLATFORM=linux
+endif
+
+ifeq ($(BOARD),launchpad)
+	PLATFORM=msp430
+	MCU=msp430g2553
+endif
+
+# Platform-specific settings
+
+ifeq ($(PLATFORM),linux)
+	CC=gcc
+endif
 
 ifeq ($(PLATFORM),msp430)
-	CC=msp430-gcc -mmcu=msp430g2553
+	CC=msp430-gcc -mmcu=$(MCU)
 endif
 
 SOURCES=$(wildcard bus/*.c) $(wildcard display/*.c) \
 	$(wildcard gpio/*.c) $(wildcard sensor/*.c) \
-	$(wildcard platform/$(PLATFORM)/*.c)
+	$(wildcard platform/$(PLATFORM)/*.c)\
+	board/$(BOARD).c
+	
 OBJECTS=$(patsubst %.c, %.o, $(SOURCES))
 
 LIBRARY=libdevices.a
