@@ -23,6 +23,9 @@
 #ifndef MCP23X17_H
 #define MCP23X17_H
 
+#define MCP23X17_PORTA		0x00
+#define MCP23X17_PORTB		0x01
+
 // MCP23x17 registers in sequential mode
 
 // I/O direction ('0' - output, '1' - input)

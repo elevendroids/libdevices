@@ -27,8 +27,29 @@
 #include "bus/i2c.h"
 
 int Mcp23017_Init(I2cDevice *device);
+
 int Mcp23017_WriteRegister(I2cDevice *device, uint8_t reg, uint8_t value);
 int Mcp23017_ReadRegister(I2cDevice *device, uint8_t reg, uint8_t *value);
+
+#define Mcp23017_SetPortDirectionA(device, value) Mcp23017_SetPortDirection(device, MCP23X17_PORTA, value)
+#define Mcp23017_SetPortDirectionB(device, value) Mcp23017_SetPortDirection(device, MCP23X17_PORTB, value)
+int Mcp23017_SetPortDirection(I2cDevice *device, uint8_t port, uint8_t value);
+
+#define Mcp23017_GetPortDirectionA(device, value) Mcp23017_GetPortDirection(device, MCP23X17_PORTA, value)
+#define Mcp23017_GetPortDirectionB(device, value) Mcp23017_GetPortDirection(device, MCP23X17_PORTB, value)
+int Mcp23017_GetPortDirection(I2cDevice *device, uint8_t port, uint8_t *value);
+
+int Mcp23017_WritePort(I2cDevice *device, uint8_t port, uint8_t value);
+int Mcp23017_ReadPort(I2cDevice *device, uint8_t port, uint8_t *value);
+
+int Mcp23017_GetPin(I2cDevice *device, uint8_t port, uint8_t pin);
+int Mcp23017_SetPin(I2cDevice *device, uint8_t port, uint8_t pin);
+int Mcp23017_ResetPin(I2cDevice *device, uint8_t port, uint8_t pin);
+
+
+// obsolete
+//int Mcp23017_SetPortDirectionA(I2cDevice *device, uint8_t value);
+//int Mcp23017_SetPortDirectionB(I2cDevice *device, uint8_t value);
 
 int Mcp23017_ReadPortA(I2cDevice *device, uint8_t *value);
 int Mcp23017_ReadPortB(I2cDevice *device, uint8_t *value);
@@ -38,10 +59,10 @@ int Mcp23017_WritePortA(I2cDevice *device, uint8_t value);
 int Mcp23017_WritePortB(I2cDevice *device, uint8_t value);
 int Mcp23017_WritePorts(I2cDevice *device, Mcp23x17PortsData data);
 
-inline int Mcp23017_SetPinA(I2cDevice *device, uint8_t pin);
-inline int Mcp23017_SetPinB(I2cDevice *device, uint8_t pin);
+int Mcp23017_SetPinA(I2cDevice *device, uint8_t pin);
+int Mcp23017_SetPinB(I2cDevice *device, uint8_t pin);
 
-inline int Mcp23017_ResetPinA(I2cDevice *device, uint8_t pin);
-inline int Mcp23017_ResetPinB(I2cDevice *device, uint8_t pin);
+int Mcp23017_ResetPinA(I2cDevice *device, uint8_t pin);
+int Mcp23017_ResetPinB(I2cDevice *device, uint8_t pin);
 
 #endif
