@@ -31,6 +31,8 @@ void Timer_SleepMSec(unsigned interval)
 	intervalCounter = interval;
 	// set timer period
 	TA0CCR0 = Msp430_cyclesPerMs - 1;
+	// reset timer
+	TA0R = 0x00;
 	// clock source = SMCLK, up mode, TAIV interrupt enabled
 	TA0CTL = TASSEL_2 | MC_1 | TAIE;
 	do {
@@ -50,8 +52,9 @@ uint16_t Timer_GetVLOFrequency(void)
 
 	// switch to 1MHz clock
 	Msp430_SetClock(MSP430_CLOCK_1MHZ);
-	// set TimerA in continous mode, set capture mode triggered by ACLK
+	// reset timer
 	TA0R = 0x00;
+	// set TimerA in continous mode, set capture mode triggered by ACLK
 	TA0CCTL0 = CM_1 | CCIS_1 | CAP;
 	TA0CTL = TASSEL_2 | ID_0 | MC_2;
 	// skip capture
@@ -78,6 +81,8 @@ void Timer_SleepSec(unsigned interval)
 	intervalCounter = interval;
 	// set timer period to ACLK frequency - one interrupt per secnd
 	TA0CCR0 = Timer_GetVLOFrequency() - 1;
+	// reset timer
+	TA0R = 0x00;
 	// clock source = ACLK, up mode, TAIV interrupt enable
 	TA0CTL = TASSEL_1 | MC_1 | TAIE;
 	do {
