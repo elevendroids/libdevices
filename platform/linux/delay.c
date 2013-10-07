@@ -23,6 +23,9 @@
 #include <unistd.h>
 #include "delay.h"
 
+DelayFunc Delay_Ms;
+DelayFunc Delay_Us;
+
 static void delay_us(unsigned int useconds)
 {
 	usleep(useconds);
