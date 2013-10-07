@@ -84,7 +84,7 @@ int Spi_WriteThenWrite(SpiDevice *device, void *tx_buf1, uint8_t tx_len1, void *
 			.cs_change = 0
 		},
 		{
-			.rx_buf = (unsigned long) tx_buf2,
+			.tx_buf = (unsigned long) tx_buf2,
 			.len = tx_len2
 		}
 	};
