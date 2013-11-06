@@ -38,7 +38,7 @@ typedef struct {
 
 extern int I2c_Open(uint8_t device, uint8_t speed);
 extern void I2c_Close(int bus);
-extern void I2c_SetSpeed(uint8_t speed);
+extern void I2c_SetSpeed(uint8_t speed); //TODO: use reference to device/bus
 
 extern int I2c_Read(I2cDevice *device, void *buffer, uint8_t len);
 extern int I2c_Write(I2cDevice *device, void *buffer, uint8_t len);
