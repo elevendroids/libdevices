@@ -26,6 +26,7 @@ endif
 
 SOURCES=$(wildcard bus/*.c) $(wildcard display/*.c) \
 	$(wildcard gpio/*.c) $(wildcard sensor/*.c) \
+	$(wildcard radio/*.c) \
 	$(wildcard platform/$(PLATFORM)/*.c)\
 	board/$(BOARD).c
 	
