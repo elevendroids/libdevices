@@ -1,44 +1,117 @@
-CFLAGS=-Os -Wall -Iinclude -fdata-sections -ffunction-sections -std=c99
+# Required variables:
+#
+# BOARD - name of target board (raspberry, beaglebone, launchpad, etc.)
+# INCLUDES - include directory in format "-Idir_name"
+# TARGET - name of target executable/firmware
+# and/or
+# TARGET_LIB - name of target static library
+#
+include project.mk
 
-# Default board
-BOARD=raspberry
+ifeq ($(BOARD),)
+$(error No board name provided - BOARD is not set)
+endif
 
-# Board-specific settings, assigning platform for a board
+ifeq ($(TARGET),)
+ifeq ($(TARGET_LIB),)
+$(error No target executable/library specified)
+endif
+endif
 
-ifeq ($(BOARD),raspberry)
+PREFIX=
+AR=$(PREFIX)ar
+CC=$(PREFIX)gcc
+CXX=$(PREFIX)g++
+LD=$(PREFIX)ld
+OBJDUMP=$(PREFIX)objdump
+SIZE=$(PREFIX)size
+
+CFLAGS=--std=c99 -Wall -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES)
+CXXFLAGS=--std=c++11 -Wall -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES)
+LDFLAGS=-Wl,-Map=$(TARGET).map
+
+ifneq ($(RELEASE),)
+	CFLAGS+=-O2
+	CXXFLAGS+=-O2
+endif
+
+ifeq ($(TARGET_LIB),)
+	LDFLAGS +=-Wl,-gc-sections
+endif
+
+# Board sections
+# Set appropriate platform, cpu/mcu etc.
+
+ifeq ($(BOARD), raspberry)
 	PLATFORM=linux
 endif
 
-ifeq ($(BOARD),launchpad)
+ifeq ($(BOARD), beaglebone)
+	PLATFORM=linux
+endif
+ 
+ifeq ($(BOARD), launchpad)
 	PLATFORM=msp430
 	MCU=msp430g2553
 endif
 
-# Platform-specific settings
+ifeq ($(BOARD), rfpad)
+	PLATFORM=msp430
+	MCU=msp430g2553
+endif
+
+ifeq ($(BOARD), tinypad)
+	PLATFORM=msp430
+	MCU=msp430g2231
+endif
+
+ifeq ($(PLATFORM),)
+$(error Board $(BOARD) is not valid)
+endif
+
+# Platform sections
+# Set toolchain options, flags etc.
+ifeq ($(PLATFORM),msp430)
+	PREFIX=msp430-
+	CFLAGS += -mmcu=$(MCU)
+	CXXFLAGS += -mmcu=$(MCU)
+	LDFLAGS += -mmcu=$(MCU)
+endif
 
 ifeq ($(PLATFORM),linux)
-	CC=gcc
+	LIBS += -lstdc++
 endif
 
-ifeq ($(PLATFORM),msp430)
-	CC=msp430-gcc -mmcu=$(MCU)
-endif
+OBJECTS=$(patsubst %.c, %.o, $(patsubst %.cpp, %.o, $(SOURCES)))
 
-SOURCES=$(wildcard bus/*.c) $(wildcard display/*.c) \
-	$(wildcard gpio/*.c) $(wildcard sensor/*.c) \
-	$(wildcard platform/$(PLATFORM)/*.c)\
-	board/$(BOARD).c
-	
-OBJECTS=$(patsubst %.c, %.o, $(SOURCES))
+all: $(SOURCES) $(TARGET) $(TARGET_LIB)
 
-LIBRARY=libdevices.a
+$(TARGET): $(OBJECTS)
+	echo "(LD): $@"
+	$(CC) $(OBJECTS) $(LDFLAGS) $(LIBS) -o $@
+	echo
+	echo Firmware size:
+	$(SIZE) $(TARGET)
 
-all: $(LIBRARY)
+$(TARGET_LIB): $(OBJECTS)
+	echo "(AR): $@"
+	$(AR) rc $(TARGET_LIB) $(OBJECTS)
 
-$(LIBRARY): $(OBJECTS)
-	ar rc $(LIBRARY) $(OBJECTS)
+%.o: %.c
+	echo "(CC): $<"
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+%.o: %.cpp
+	echo "(CXX): $<"
+	$(CXX) -c $(CXXFLAGS) -o $@ $<
+
+.SILENT:
+.PHONY:	clean
 
 clean:
-	rm -rf $(OBJECTS) $(LIBRARY)
+	echo "Cleaning up..."
+	rm -rf $(OBJECTS) $(TARGET) $(TARGET_LIB)
 
+dump:
+	$(OBJDUMP) -g -d $(TARGET)$(TARGET_LIB) > $(TARGET)$(TARGET_LIB).dump
 
