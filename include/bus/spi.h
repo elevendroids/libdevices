@@ -20,24 +20,42 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 */
-#include <unistd.h>
-#include "delay.h"
+#ifndef SPI_H
+#define SPI_H
 
-DelayFunc Delay_Ms;
-DelayFunc Delay_Us;
+typedef struct {
+	int bus;
+} SpiDevice;
 
-static void delay_us(unsigned int useconds)
+extern int Spi_Open(SpiDevice *device, uint8_t device_id);
+extern void Spi_Close(SpiDevice *device);
+
+extern int Spi_Write(SpiDevice *device, void *buffer, uint8_t len);
+extern int Spi_Read(SpiDevice *device, void *buffer, uint8_t len); 
+
+extern int Spi_WriteThenRead(SpiDevice *device, void *tx_buffer, uint8_t tx_len, void *rx_buffer, uint8_t rx_len);
+extern int Spi_WriteThenWrite(SpiDevice *device, void *tx_buffer1, uint8_t tx_len1, void *tx_buffer2, uint8_t tx_len2);
+
+inline static uint8_t Spi_ReadRegister(SpiDevice *device, uint8_t reg)
 {
-	usleep(useconds);
+	uint8_t result = 0;
+	Spi_WriteThenRead(device, &reg, sizeof(reg), &result, sizeof(result));
+	return result;
 }
 
-static void delay_ms(unsigned int mseconds)
+inline static void Spi_BurstReadRegister(SpiDevice *device, uint8_t reg, void *buffer, uint8_t len)
 {
-	usleep(mseconds * 1000);
+	Spi_WriteThenRead(device, &reg, sizeof(reg), buffer, len);
 }
 
-void Delay_Init(void)
+inline static void Spi_WriteRegister(SpiDevice *device, uint8_t reg, uint8_t value)
 {
-	Delay_Us = &delay_us;
-	Delay_Ms = &delay_ms;
+	Spi_WriteThenWrite(device, &reg, sizeof(reg), &value, sizeof(value));
 }
+
+inline static void Spi_BurstWriteRegister(SpiDevice *device, uint8_t reg, void *buffer, uint8_t len)
+{
+	Spi_WriteThenWrite(device, &reg, sizeof(reg), buffer, len);
+}
+
+#endif /* SPI_H */
