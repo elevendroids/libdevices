@@ -1,9 +1,8 @@
 INCLUDES=-Iinclude
-SOURCES=$(wildcard bus/*.c) $(wildcard display/*.c) \
-	$(wildcard gpio/*.c) $(wildcard sensor/*.c) \
-	$(wildcard platform/$(PLATFORM)/*.c) \
-	$(wildcard sys/*.c) \
-	board/$(BOARD).c
+SOURCES=$(wildcard src/bus/*.c) $(wildcard src/display/*.c) \
+	$(wildcard src/gpio/*.c) $(wildcard src/sensor/*.c) \
+	$(wildcard src/platform/$(PLATFORM)/*.c) \
+	src/board/$(BOARD).c
 BOARD=launchpad
 TARGET_LIB=libdevices.a
 
