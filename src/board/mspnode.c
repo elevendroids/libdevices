@@ -1,6 +1,6 @@
 /*
 *
-* Copyright (c) 2013, Michal Potrzebicz <michal@elevendroids.com>
+* Copyright (c) 2014, Michal Potrzebicz <michal@elevendroids.com>
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following 
@@ -23,22 +23,13 @@
 
 #include <stdarg.h>
 #include "platform/msp430.h"
-#include "board/rfpad.h"
+//#include "board/rfpad.h"
 
 void Board_Init(void)
 {
 	// disable watchdog
 	WDTCTL = WDTPW + WDTHOLD;
 	
-	// enable VLO as ACLK source
-	BCSCTL3 = LFXT1S_2;
-	P2SEL &= ~(0xC0);
-	//P2DIR = PS_BIT; // PS 
-
-	// initialize nonexisitng ports
-	P3DIR = 0xFF;
-	P3OUT = 0x00;
-
 	Msp430_SetClock(MSP430_CLOCK_1MHZ);
 }
 
@@ -48,10 +39,10 @@ void Board_Control(int request, ...)
 
 	va_start(arguments, request);
 	// TODO: Handle control requests
-	switch(request) {
-		case BOARD_POWERSAVE_ON		: P2OUT |= BIT7; break;
-		case BOARD_POWERSAVE_OFF	: P2OUT &= ~BIT7; break;
-	}
+//	switch(request) {
+//		case BOARD_POWERSAVE_ON		: P2OUT |= BIT7; break;
+//		case BOARD_POWERSAVE_OFF	: P2OUT &= ~BIT7; break;
+//	}
 
 	va_end(arguments);
 }

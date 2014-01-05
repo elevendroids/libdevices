@@ -55,7 +55,7 @@ ifeq ($(BOARD), launchpad)
 	MCU=msp430g2553
 endif
 
-ifeq ($(BOARD), rfpad)
+ifeq ($(BOARD), mspnode)
 	PLATFORM=msp430
 	MCU=msp430g2553
 endif
