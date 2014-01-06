@@ -25,6 +25,7 @@ CXX=$(PREFIX)g++
 LD=$(PREFIX)ld
 OBJDUMP=$(PREFIX)objdump
 SIZE=$(PREFIX)size
+DOXYGEN=doxygen
 
 CFLAGS=--std=c99 -Wall -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES)
 CXXFLAGS=--std=c++11 -Wall -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES)
@@ -114,4 +115,8 @@ clean:
 
 dump:
 	$(OBJDUMP) -g -d $(TARGET)$(TARGET_LIB) > $(TARGET)$(TARGET_LIB).dump
+
+docs:
+	echo "Generating documentation..."
+	$(DOXYGEN)
 
