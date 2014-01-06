@@ -23,16 +23,25 @@
 
 #include <stdarg.h>
 #include "platform/msp430.h"
-//#include "board/rfpad.h"
+#include "board/mspnode.h"
+#include "digital_io.h"
 
 void Board_Init(void)
 {
 	// disable watchdog
 	WDTCTL = WDTPW + WDTHOLD;
+	// initialize LED outputs
+	Pin_SetMode(LED_ERROR, PIN_MODE_OUTPUT);
+	Pin_SetMode(LED_STATUS_1, PIN_MODE_OUTPUT);
+	Pin_SetMode(LED_STATUS_2, PIN_MODE_OUTPUT);
 	
 	Msp430_SetClock(MSP430_CLOCK_1MHZ);
 }
 
+/**
+Board-specific control
+
+*/
 void Board_Control(int request, ...)
 {
 	va_list arguments;
