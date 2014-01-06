@@ -35,21 +35,27 @@ void Msp430_SetClock(int clock)
 
 	__disable_interrupt();
 	switch (clock) {
-		case MSP430_CLOCK_1MHZ	: 
- 			bcs1 = CALBC1_1MHZ;
-			dco = CALDCO_1MHZ;
-			break;
+		#ifdef CALDCO_8MHZ
 		case MSP430_CLOCK_8MHZ	:
 			bcs1 = CALBC1_8MHZ;
 			dco = CALDCO_8MHZ;
 			break;
+		#endif
+		#ifdef CALDCO_12MHZ
 		case MSP430_CLOCK_12MHZ	:
 			bcs1 = CALBC1_12MHZ;
 			dco = CALDCO_12MHZ;
 			break;
-		default:
-			bcs1 = CALBC1_16MHZ;
+		#endif
+		#ifdef CALDCO_16MHZ
+		case MSP430_CLOCK_16MHZ	: 
+ 			bcs1 = CALBC1_16MHZ;
 			dco = CALDCO_16MHZ;
+			break;
+		#endif
+		default:
+			bcs1 = CALBC1_1MHZ;
+			dco = CALDCO_1MHZ;
 			break;
 	}
 	Msp430_currentClock = clock;
