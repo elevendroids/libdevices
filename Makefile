@@ -25,6 +25,7 @@ CXX=$(PREFIX)g++
 LD=$(PREFIX)ld
 OBJDUMP=$(PREFIX)objdump
 SIZE=$(PREFIX)size
+STRIP=$(PREFIX)strip
 DOXYGEN=doxygen
 
 CFLAGS=--std=c99 -Wall -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES)
@@ -111,10 +112,15 @@ $(TARGET_LIB): $(OBJECTS)
 
 clean:
 	echo "Cleaning up..."
-	rm -rf $(OBJECTS) $(TARGET) $(TARGET_LIB)
+	rm -rf $(OBJECTS) $(TARGET) $(TARGET_LIB) *.dump *.map
 
 dump:
+	echo "(OBJDUMP): $(TARGET)$(TARGET_LIB)"
 	$(OBJDUMP) -g -d $(TARGET)$(TARGET_LIB) > $(TARGET)$(TARGET_LIB).dump
+
+strip:
+	echo "(STRIP): $(TARGET)$(TARGET_LIB)"
+	$(STRIP) $(TARGET)$(TARGET_LIB)
 
 docs:
 	echo "Generating documentation..."
