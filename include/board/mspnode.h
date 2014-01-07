@@ -34,4 +34,14 @@
 #define LED_STATUS_1	17 // P3.1
 #define LED_STATUS_2	18 // P3.2
 
+#define A0		0 // P1.0
+#define A1		3 // P1.3
+#define A2		5 // P1.5
+
+#define D0		8 // P2.0
+#define D1		9 // P2.1
+#define D2		10 // P2.2
+#define D3		11 // P2.3
+#define D4		12 // P2.4
+
 #endif
