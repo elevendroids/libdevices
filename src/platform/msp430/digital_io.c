@@ -58,7 +58,7 @@ typedef struct {
  */
 static const Msp430Port ports[] = {
 	{ &P1OUT, &P1IN, &P1DIR, &P1REN, &P1SEL,
-		#ifdef P1SEL2
+		#ifdef P1SEL2_
 		&P1SEL2 
 		#else
 		0
@@ -66,7 +66,7 @@ static const Msp430Port ports[] = {
 	},
 
 	{ &P2OUT, &P2IN, &P2DIR, &P2REN, &P2SEL, 
-		#ifdef P2SEL2
+		#ifdef P2SEL2_
 		&P2SEL2 
 		#else
 		0
@@ -75,7 +75,7 @@ static const Msp430Port ports[] = {
 
 	#ifdef __MSP430_HAS_PORT3_R__
 	,{ &P3OUT, &P3IN, &P3DIR, &P3REN, &P3SEL, 
-		#ifdef P3SEL2
+		#ifdef P3SEL2_
 		&P3SEL2 
 		#else
 		0
