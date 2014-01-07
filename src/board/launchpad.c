@@ -23,6 +23,7 @@
 
 #include <stdarg.h>
 #include "platform/msp430.h"
+#include "board/launchpad.h"
 
 void Board_Init(void)
 {
