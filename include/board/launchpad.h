@@ -33,4 +33,6 @@
 #define LED1	0 // P1.0
 #define LED2	6 // P1.6
 
+#define BUTTON	3 // P1.3
+
 #endif
