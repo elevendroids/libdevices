@@ -32,6 +32,8 @@
 #ifndef _DIGITAL_IO_H
 #define _DIGITAL_IO_H
 
+#include <stdint.h>
+
 /** @brief Pin low state */
 #define PIN_STATE_LOW		0x00
 /** @brief Pin high state */
