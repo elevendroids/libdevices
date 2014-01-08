@@ -45,11 +45,21 @@
 /** @brief Enables input pin's pulldown resistor */
 #define PIN_MODE_PULLDOWN	0x20
 
+/** @brief Pin interrupt is triggered by a low-to-high state transition */
+#define PIN_INT_MODE_RISING		0x00
+/** @brief Pin interrupt is triggered by a high-to-low state transition */
+#define PIN_INT_MODE_FALLING	0x01
+/** @brief Pin interrupt is triggered by an any state transition */
+#define PIN_INT_MODE_CHANGE		0x02
+
+typedef void (*PinIntCallback)(void);
+
 /**
- * @brief Set an output pin to 1
+ * @brief Set an output pin
  * @param pin an output pin id
+ * @param state new pin state
  */
-void Pin_Set(int pin);
+void Pin_Set(int pin, uint8_t state);
 
 /**
  * @brief Gets an input pin state
@@ -57,12 +67,6 @@ void Pin_Set(int pin);
  * @returns #PIN_STATE_LOW or #PIN_STATE_HIGH
  */
 int Pin_Get(int pin);
-
-/**
- * @brief Reset an output pin to 0
- * @param pin a pin id
- */
-void Pin_Reset(int pin);
 
 /**
  * @brief Toggle an output pin
@@ -84,6 +88,24 @@ void Pin_Toggle(int pin);
  * 
  */
 void Pin_SetMode(int pin, int mode);
+
+/**
+ * @brief
+ * @param pin a pin id
+ * @param callback function to be called when the interrupt occurs
+ * @param mode interrupt trigger mode
+ *
+ * Interrupt trigger mode support is hardware dependent.
+ * Setting interrupt handler on a non-interrupt capable pin has no effect.
+ *
+ */
+void Pin_AttachInterrupt(int pin, PinIntCallback callback, int mode);
+
+/**
+ * @brief Disable pin interrupt
+ * @param pin a pin id
+ */
+void Pin_DetachInterrupt(int pin);
 
 
 #endif /* _DIGITAL_IO_H */

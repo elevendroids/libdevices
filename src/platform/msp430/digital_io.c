@@ -43,6 +43,9 @@ typedef struct {
 	volatile uint8_t *ren;		///< Pullup/pulldown resistor enable register
 	volatile uint8_t *sel1;		///< Primary function select register
 	volatile uint8_t *sel2;		///< Secondary function select register (some MCU's only)
+	volatile uint8_t *ie;		///< Interrupt enable register
+	volatile uint8_t *ies;		///< Interrupt mode register
+	volatile uint8_t *ifg;		///< Interrupt flag register
 } Msp430Port;
 
 /**
@@ -58,30 +61,30 @@ typedef struct {
  */
 static const Msp430Port ports[] = {
 	{ &P1OUT, &P1IN, &P1DIR, &P1REN, &P1SEL,
-		#ifdef P1SEL2_
-		&P1SEL2 
-		#else
-		0
-		#endif
+#ifdef P1SEL2_
+		&P1SEL2,
+#else
+		0,
+#endif
+		&P1IE, &P1IES, &P1IFG
 	},
 
 	{ &P2OUT, &P2IN, &P2DIR, &P2REN, &P2SEL, 
-		#ifdef P2SEL2_
-		&P2SEL2 
-		#else
-		0
-		#endif
+#ifdef P2SEL2_
+		&P2SEL2,
+#else
+		0,
+#endif
+		&P2IE, &P2IES, &P2IFG
 	}
 
-	#ifdef __MSP430_HAS_PORT3_R__
+#ifdef __MSP430_HAS_PORT3_R__
 	,{ &P3OUT, &P3IN, &P3DIR, &P3REN, &P3SEL, 
 		#ifdef P3SEL2_
 		&P3SEL2 
-		#else
-		0
 		#endif
 	}
-	#endif /* __MSP430_HAS_PORT3_R__ */
+#endif /* __MSP430_HAS_PORT3_R__ */
 };
 
 /**
@@ -120,29 +123,25 @@ static const Msp430Pin pins[] = {
 };
 
 
-void Pin_Set(int pin)
+static volatile PinIntCallback pin_int_callbacks[16];
+
+void Pin_Set(int pin, uint8_t state)
 {
 	const Msp430Pin *port_pin = &pins[pin];
-	*port_pin->port->out |= port_pin->mask;
+	if (state == PIN_STATE_LOW)
+		*port_pin->port->out &= ~port_pin->mask;
+	else
+		*port_pin->port->out |= port_pin->mask;
 }
 
 int Pin_Get(int pin)
 {
 	const Msp430Pin *port_pin = &pins[pin];
-	if (*port_pin->port->in & port_pin->mask) {
+	if (*port_pin->port->in & port_pin->mask)
 		return PIN_STATE_HIGH;
-	}
-	else {
+	else
 		return PIN_STATE_LOW;
-	}
 }
-
-void Pin_Reset(int pin)
-{
-	const Msp430Pin *port_pin = &pins[pin];
-	*port_pin->port->out &= ~port_pin->mask;
-}
-
 
 void Pin_Toggle(int pin)
 {
@@ -154,32 +153,88 @@ void Pin_SetMode(int pin, int mode)
 {
 	const Msp430Pin *port_pin = &pins[pin];
 	const Msp430Port *port = port_pin->port;
+	const uint8_t mask = port_pin->mask;
 
-	*port->sel1 &= ~port_pin->mask;
+	*port->sel1 &= ~mask;
 	if (port->sel2) {
-		*port->sel2 &= ~port_pin->mask;
+		*port->sel2 &= ~mask;
 	}
 
 	if (mode & PIN_MODE_OUTPUT) {
-		*port->ren &= ~port_pin->mask;
-		*port->out &= ~port_pin->mask;
-		*port->dir |= port_pin->mask;
+		*port->ren &= ~mask;
+		*port->out &= ~mask;
+		*port->dir |= mask;
 	}
 	else {
-		*port->dir &= ~port_pin->mask;
+		*port->dir &= ~mask;
 		if (mode & (PIN_MODE_PULLUP | PIN_MODE_PULLDOWN)) {
-			*port->ren |= port_pin->mask;
+			*port->ren |= mask;
 
 			if (mode & PIN_MODE_PULLUP) {
-				*port->out |= port_pin->mask;
+				*port->out |= mask;
 			}
 			else {
-				*port->out &= ~port_pin->mask;
+				*port->out &= ~mask;
 			}
 		}
 		else {
-			*port->ren &= ~port_pin->mask;
+			*port->ren &= ~mask;
 		}
 	}
+}
+
+void Pin_AttachInterrupt(int pin, PinIntCallback callback, int mode)
+{
+	const Msp430Pin *port_pin = &pins[pin];
+	const Msp430Port *port = port_pin->port;
+	if (port->ie) {
+		_DINT();
+		*port->ie |= port_pin->mask;
+		if (mode == PIN_INT_MODE_FALLING)
+			*port->ies |= port_pin->mask;
+		else
+			*port->ies &= ~port_pin->mask;
+		*port->ifg &= ~port_pin->mask;
+		pin_int_callbacks[pin] = callback;
+		_EINT();
+	}
+}
+
+void Pin_DetachInterrupt(int pin)
+{
+	const Msp430Pin *port_pin = &pins[pin];
+	const Msp430Port *port = port_pin->port;
+	if (port->ie) {
+		_DINT();
+		pin_int_callbacks[pin] = 0;
+		*port->ie &= ~port_pin->mask;
+		*port->ifg &= ~port_pin->mask;
+		_EINT();
+	}
+}
+
+static void PortIsrHandler(const int index, uint8_t flags)
+{
+	volatile PinIntCallback *callback = &pin_int_callbacks[index];
+	while (flags) {
+		if ((flags & 0x01) && (*callback))
+			(*callback)();
+		callback++;
+		flags >>= 1;
+	}
+}
+
+#pragma vector=PORT1_VECTOR
+__interrupt void Port1_ISR(void) 
+{
+	PortIsrHandler(0, P1IFG);
+	P1IFG = 0;
+}
+
+#pragma vector=PORT2_VECTOR
+__interrupt void Port2_ISR(void)
+{
+	PortIsrHandler(8, P2IFG);
+	P2IFG = 0;
 }
 
