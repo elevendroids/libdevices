@@ -20,11 +20,30 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 */
-#ifndef MSP430_H
-#define MSP430_H
+#ifndef _MSP430_H
+#define _MSP430_H
 
 #include <msp430.h>
 #include <stdint.h>
+
+#define MSP430_HAS_PORT1
+
+#ifdef __MSP430_HAS_PORT2_R__
+	// MSP430G2230 has P2 defined int its header though it doesn't have in the hardware
+	#ifndef __MSP430G2230__
+		#define MSP430_HAS_PORT2
+	#endif
+#endif
+
+#ifdef __MSP430_HAS_PORT3_R__
+	#define MSP430_HAS_PORT3
+#endif
+
+#ifdef MSP430_HAS_PORT2
+	#define MSP430_PORT_INT_COUNT	16
+#else
+	#define MSP430_PORT_INT_COUNT	8
+#endif
 
 #define MSP430_CLOCK_1MHZ	0x00
 #define MSP430_CLOCK_8MHZ	0x01
@@ -42,5 +61,5 @@ static const uint8_t  _cyclesPerUs[] = {1, 8, 12, 16};
 void Msp430_SetClock(int clock);
 uint16_t Msp430_GetSupplyVoltage(void);
 
-#endif /* MSP430_H */
+#endif /* _MSP430_H */
 

@@ -31,26 +31,8 @@
 
 #include <msp430.h>
 #include <stdint.h>
+#include "platform/msp430.h"
 #include "digital_io.h"
-
-#define MSP430_HAS_PORT1
-
-#ifdef __MSP430_HAS_PORT2_R__
-	// MSP430G2230 has P2 defined int its header though it doesn't have in the hardware
-	#ifndef __MSP430G2230__
-		#define MSP430_HAS_PORT2
-	#endif
-#endif
-
-#ifdef __MSP430_HAS_PORT3_R__
-	#define MSP430_HAS_PORT3
-#endif
-
-#ifdef MSP430_HAS_PORT2
-	#define MSP430_PORT_INT_COUNT	16
-#else
-	#define MSP430_PORT_INT_COUNT	8
-#endif
 
 /** 
  * @brief Container for port registers 
@@ -102,6 +84,42 @@ static const uint8_t pin_mask[] = {
 static volatile PinIntCallback pin_int_callbacks[MSP430_PORT_INT_COUNT];
 #endif
 
+void Port_Write(int port, uint8_t value)
+{
+	const Msp430Port *port_ptr = &ports[port];
+	*port_ptr->out = value;
+}
+
+uint8_t Port_Read(int port)
+{
+	const Msp430Port *port_ptr = &ports[port];
+	return *port_ptr->in;
+}
+
+void Port_SetMode(int port, int mode)
+{
+	const Msp430Port *port_ptr = &ports[port];
+	if (mode & PORT_MODE_OUTPUT) {
+		*port_ptr->ren = 0x00;
+		*port_ptr->out = 0x00;
+		*port_ptr->dir = 0xFF;
+	}
+	else {
+		*port_ptr->dir = 0x00;
+		if (mode & (PORT_MODE_PULLUP | PORT_MODE_PULLDOWN)) {
+			*port_ptr->ren = 0xFF;
+			if (mode & PORT_MODE_PULLUP)
+				*port_ptr->out = 0xFF;
+			else
+				*port_ptr->out = 0x00;
+		}
+		else {
+			*port_ptr->ren = 0x00;
+			*port_ptr->out = 0x00;
+		}
+	}
+}
+
 void Pin_Set(int pin, uint8_t state)
 {
 	const Msp430Port *port = pin_port[pin];
@@ -149,8 +167,10 @@ void Pin_SetMode(int pin, int mode)
 			else
 				*port->out &= ~mask;
 		}
-		else
+		else {
 			*port->ren &= ~mask;
+			*port->out &= ~mask;
+		}
 	}
 }
 

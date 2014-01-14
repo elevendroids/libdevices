@@ -34,14 +34,20 @@
 
 #include <stdint.h>
 
+#define PORT_MODE_INPUT		0x00
+#define PORT_MODE_OUTPUT	0x01
+#define PORT_MODE_PULLUP	0x10
+#define PORT_MODE_PULLDOWN	0x20
+
 /** @brief Pin low state */
 #define PIN_STATE_LOW		0x00
 /** @brief Pin high state */
 #define PIN_STATE_HIGH		0x01
+
 /** @brief Selects input pin mode */
-#define PIN_MODE_INPUT		0x01
+#define PIN_MODE_INPUT		0x00
 /** @brief Selects output pin mode */
-#define PIN_MODE_OUTPUT		0x02
+#define PIN_MODE_OUTPUT		0x01
 /** @brief Enables input pin's pullup resistor */
 #define PIN_MODE_PULLUP		0x10
 /** @brief Enables input pin's pulldown resistor */
@@ -55,6 +61,27 @@
 #define PIN_INT_MODE_CHANGE		0x02
 
 typedef void (*PinIntCallback)(void);
+
+/**
+ * @brief Write byte to a port
+ * @param port an output port id
+ * @param value a value to write
+ */
+void Port_Write(int port, uint8_t value);
+
+/**
+ * @brief Read a byte from a port
+ * @param port an input port id
+ * @returns byte read read from the port
+ */
+uint8_t Port_Read(int port);
+
+/**
+ * @brief Set port mode
+ * @param port a port id
+ * @param mode
+ */
+void Port_SetMode(int port, int mode);
 
 /**
  * @brief Set an output pin
