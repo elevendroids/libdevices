@@ -33,8 +33,8 @@ CXXFLAGS=--std=c++11 -Wall -ffunction-sections -fdata-sections -DPLATFORM_$(PLAT
 LDFLAGS=-Wl,-Map=$(TARGET).map
 
 ifneq ($(RELEASE),)
-	CFLAGS+=-O2
-	CXXFLAGS+=-O2
+	CFLAGS+=-Os
+	CXXFLAGS+=-Os
 endif
 
 ifeq ($(TARGET_LIB),)
@@ -64,7 +64,7 @@ endif
 
 ifeq ($(BOARD), tinypad)
 	PLATFORM=msp430
-	MCU=msp430g2231
+	MCU=msp430g2230
 endif
 
 ifeq ($(PLATFORM),)
