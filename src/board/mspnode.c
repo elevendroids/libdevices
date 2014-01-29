@@ -30,12 +30,11 @@ void Board_Init(void)
 {
 	// disable watchdog
 	WDTCTL = WDTPW + WDTHOLD;
+	Msp430_InitClock();
 	// initialize LED outputs
 	Pin_SetMode(LED_ERROR, PIN_MODE_OUTPUT);
 	Pin_SetMode(LED_STATUS_1, PIN_MODE_OUTPUT);
 	Pin_SetMode(LED_STATUS_2, PIN_MODE_OUTPUT);
-	
-	Msp430_SetClock(MSP430_CLOCK_1MHZ);
 }
 
 /**

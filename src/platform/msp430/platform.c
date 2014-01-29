@@ -23,49 +23,23 @@
 
 #include <msp430.h>
 #include <stdint.h>
-#include "delay.h"
-#include "timer.h"
 #include "platform/msp430.h"
 
-uint8_t	Msp430_currentClock = 0;
-
-void Msp430_SetClock(int clock)
+void Msp430_InitClock()
 {
-	uint8_t bcs1, dco;
-
-	__disable_interrupt();
-	switch (clock) {
-		#ifdef CALDCO_8MHZ_
-		case MSP430_CLOCK_8MHZ	:
-			bcs1 = CALBC1_8MHZ;
-			dco = CALDCO_8MHZ;
-			break;
-		#endif
-		#ifdef CALDCO_12MHZ_
-		case MSP430_CLOCK_12MHZ	:
-			bcs1 = CALBC1_12MHZ;
-			dco = CALDCO_12MHZ;
-			break;
-		#endif
-		#ifdef CALDCO_16MHZ_
-		case MSP430_CLOCK_16MHZ	: 
- 			bcs1 = CALBC1_16MHZ;
-			dco = CALDCO_16MHZ;
-			break;
-		#endif
-		default:
-			bcs1 = CALBC1_1MHZ;
-			dco = CALDCO_1MHZ;
-			break;
-	}
-	Msp430_currentClock = clock;
-
-	// configure base clock, divide ACLK by 8
-	BCSCTL1 = bcs1 | DIVA_3;
-	// configure DCO
-	DCOCTL = dco;
-	Delay_Init();
-	__enable_interrupt();
+	#if (F_CPU == 16000000UL)
+	BCSCTL1 = CALBC1_16MHZ;
+	DCOCTL = CALDCO_16MHZ;
+	#elif (F_CPU == 12000000UL)
+	BCSCTL1 = CALBC1_12MHZ;
+	DCOCTL = CALDCO_12MHZ;
+	#elif (F_CPU == 8000000UL)
+	BCSCTL1 = CALBC1_8MHZ;
+	DCOCTL = CALDCO_8MHZ;
+	#elif (F_CPU == 1000000UL)
+	BCSCTL1 = CALBC1_1MHZ;
+	DCOCTL = CALDCO_1MHZ;
+	#endif
 }
 
 uint16_t Msp430_GetSupplyVoltage(void)

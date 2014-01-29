@@ -30,14 +30,10 @@ void Board_Init(void)
 	// disable watchdog
 	WDTCTL = WDTPW + WDTHOLD;
 	
-	// enable VLO as ACLK source
-	BCSCTL3 |= LFXT1S_2;
-
 	// initialize nonexisitng ports
 	P3DIR = 0xFF;
 	P3OUT = 0x00;
-
-	Msp430_SetClock(MSP430_CLOCK_1MHZ);
+	Msp430_InitClock();
 }
 
 void Board_Control(int request, ...)

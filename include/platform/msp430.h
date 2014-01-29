@@ -26,6 +26,27 @@
 #include <msp430.h>
 #include <stdint.h>
 
+#ifndef F_CPU
+#define F_CPU 1000000UL
+#warning "F_CPU is not defined!"
+#endif
+
+#if F_CPU == 16000000UL
+	#define MSP430_CYCLES_PER_US 16
+	#define MSP430_CYCLES_PER_MS 16000
+#elif F_CPU == 1200000UL
+	#define MSP430_CYCLES_PER_US 12
+	#define MSP430_CYCLES_PER_MS 12000
+#elif F_CPU == 8000000UL
+	#define MSP430_CYCLES_PER_US 8
+	#define MSP430_CYCLES_PER_MS 8000
+#elif F_CPU == 1000000UL
+	#define MSP430_CYCLES_PER_US 1
+	#define MSP430_CYCLES_PER_MS 1000
+#else
+	#error "Unsupported F_CPU frequency"
+#endif
+
 #define MSP430_HAS_PORT1
 
 #ifdef __MSP430_HAS_PORT2_R__
@@ -45,20 +66,8 @@
 	#define MSP430_PORT_INT_COUNT	8
 #endif
 
-#define MSP430_CLOCK_1MHZ	0x00
-#define MSP430_CLOCK_8MHZ	0x01
-#define MSP430_CLOCK_12MHZ	0x02
-#define MSP430_CLOCK_16MHZ	0x03
+void Msp430_InitClock();
 
-extern uint8_t 	Msp430_currentClock;
-
-static const uint16_t _cyclesPerMs[] = {1000, 8000, 12000, 16000};
-static const uint8_t  _cyclesPerUs[] = {1, 8, 12, 16};
-
-#define Msp430_cyclesPerMs	_cyclesPerMs[Msp430_currentClock]
-#define Msp430_cyclesPerUs	_cyclesPerUs[Msp430_currentClock]
-
-void Msp430_SetClock(int clock);
 uint16_t Msp430_GetSupplyVoltage(void);
 
 #endif /* _MSP430_H */

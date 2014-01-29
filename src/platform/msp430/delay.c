@@ -21,34 +21,19 @@
 *
 */
 #include <msp430.h>
-#include <stdint.h>
-#include "delay.h"
 #include "platform/msp430.h"
 
-DelayFunc Delay_Ms;
-DelayFunc Delay_Us;
+void Delay_Us(unsigned int interval)
+{
+	do { 
+		__delay_cycles(MSP430_CYCLES_PER_US);
+	} while (--interval);
+}
 
-#define DELAY_US_FUNC(cycles) static void delay_us ## cycles (unsigned int useconds)\
-	{ do { __delay_cycles(cycles); } while (--useconds); }
-
-#define DELAY_MS_FUNC(cycles) static void delay_ms ## cycles (unsigned int mseconds)\
-	{ do { __delay_cycles(cycles * 1000); } while (--mseconds); }
-
-DELAY_US_FUNC(1);
-DELAY_US_FUNC(8);
-DELAY_US_FUNC(12);
-DELAY_US_FUNC(16);
-
-DELAY_MS_FUNC(1);
-DELAY_MS_FUNC(8);
-DELAY_MS_FUNC(12);
-DELAY_MS_FUNC(16);
-
-static const DelayFunc Delay_ms[] = { delay_ms1, delay_ms8, delay_ms12, delay_ms16 };
-static const DelayFunc Delay_us[] = { delay_us1, delay_us8, delay_us12, delay_us16 };
-
-void Delay_Init(void) {
-	Delay_Us = Delay_us[Msp430_currentClock];
-	Delay_Ms = Delay_ms[Msp430_currentClock];
-} 
+void Delay_Ms(unsigned int interval)
+{
+	do {
+		__delay_cycles(MSP430_CYCLES_PER_MS);
+	} while (--interval);
+}
 

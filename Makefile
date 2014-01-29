@@ -55,17 +55,23 @@ endif
 ifeq ($(BOARD), launchpad)
 	PLATFORM=msp430
 	MCU=msp430g2553
+#	CFLAGS += -DF_CPU=1000000UL
+#	CFLAGS += -DF_CPU=8000000UL
+	CFLAGS += -DF_CPU=16000000UL
 endif
 
 ifeq ($(BOARD), mspnode)
 	PLATFORM=msp430
 	MCU=msp430g2553
+	CFLAGS += -DF_CPU=16000000UL
 endif
 
 ifeq ($(BOARD), tinypad)
 	PLATFORM=msp430
 	MCU=msp430g2230
 endif
+
+#OUTDIR=.
 
 ifeq ($(PLATFORM),)
 $(error Board $(BOARD) is not valid)
@@ -98,6 +104,9 @@ $(TARGET): $(OBJECTS)
 $(TARGET_LIB): $(OBJECTS)
 	echo "(AR): $@"
 	$(AR) rc $(TARGET_LIB) $(OBJECTS)
+	echo
+	echo Library size:
+	$(SIZE) $(TARGET_LIB)
 
 %.o: %.c
 	echo "(CC): $<"

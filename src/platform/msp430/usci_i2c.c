@@ -44,15 +44,14 @@ void I2c_Close(int bus)
 
 void I2c_SetSpeed(uint8_t speed)
 {
-	// This code is optimized to use one simple division operation (usually inlined by the compiler).
 	// Prescale value = SMCLK(kHz) / SCL(kHz)
-	uint16_t temp;
+	uint16_t prescale;
 	if (speed == I2C_SPEED_STANDARD) {
-		temp = Msp430_cyclesPerMs; // leave as is for 100kHz
+		prescale = (MSP430_CYCLES_PER_MS / 100);
 	} else { // there's no highspeed mode available
-		temp = (Msp430_cyclesPerMs / 4); // divide by 4 for 400kHz
+		prescale = (MSP430_CYCLES_PER_MS / 400);
 	}
-	UsciB_SetPrescaler(temp / 100);	
+	UsciB_SetPrescaler(prescale);	
 }
 
 int I2c_Read(I2cDevice *device, void *buffer, uint8_t len)
