@@ -59,7 +59,8 @@ void UsciB_I2cInit(void)
 
 	UCB0CTL1 &= ~UCSWRST;
 	IE2 |= UCB0TXIE | UCB0RXIE;
-//	UCB0I2CIE |= UCNACKIE;
+	UCB0I2CIE |= UCNACKIE;
+	_EINT();
 }
 
 int UsciB_I2cTransaction(uint8_t address, UsciMessage *messages, uint8_t message_count)
@@ -84,8 +85,13 @@ int UsciB_I2cTransaction(uint8_t address, UsciMessage *messages, uint8_t message
 	} else {
 		UCB0CTL1 |= UCTR + UCTXSTT;
 	}
-	LPM3;
-	while (UCB0STAT & UCBBUSY);
+	
+	_DINT();
+	if (UCB0STAT & UCBBUSY)
+		_bis_SR_register(LPM3_bits | GIE);
+	else
+		_EINT();
+	while (UCB0STAT & UCBBUSY) ;
 	return 0;
 }
 
@@ -190,7 +196,10 @@ __interrupt void USCI_Transmit(void)
 #pragma vector=USCIAB0RX_VECTOR
 __interrupt void USCI_Receive(void)
 {
-	
+	if (UCB0STAT & UCNACKIFG) {
+		UCB0CTL1 |= UCTXSTP;
+		UCB0STAT &= ~UCNACKIFG;
+	}	
 }
 
 #endif /* __MSP430_HAS_USCI__ */
