@@ -24,6 +24,5 @@
 
 void Board_Init(void)
 {
-	Delay_Init();
 }
 
