@@ -29,11 +29,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "bus/i2c.h"
 
 #define I2C_BUS_DEVICE "/dev/i2c-%d"
 
-int I2c_Open(uint8_t device, uint8_t speed)
+bool I2c_Open(uint8_t device, I2cSpeed speed)
 {
 	char file_name[255];
 	snprintf(file_name, sizeof(file_name), I2C_BUS_DEVICE, device);
@@ -45,58 +46,56 @@ void I2c_Close(int bus)
 	close(bus);
 }
 
-int I2c_WriteThenRead(I2cDevice *device, void *tx_buf, uint8_t tx_len, void *rx_buf, uint8_t rx_len)
+bool I2c_Read(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len)
 {
-	int status;
+	int msg_count = 0;
 	struct i2c_rdwr_ioctl_data data;
 	struct i2c_msg messages[2];
 
-	messages[0].addr = device->address;
-	messages[0].flags = 0;
-	messages[0].len = tx_len;
-	messages[0].buf = tx_buf;
+	if (reg != I2C_REGISTER_NONE) {
+		messages[msg_count].addr = device->address;
+		messages[msg_count].flags = 0;
+		messages[msg_count].len = sizeof(reg);
+		messages[msg_count].buf = &reg;
+		msg_count++;
+	}
 
-	messages[1].addr = device->address;
-	messages[1].flags = I2C_M_RD;
-	messages[1].len = rx_len;
-	messages[1].buf = rx_buf;
+	messages[msg_count].addr = device->address;
+	messages[msg_count].flags = I2C_M_RD;
+	messages[msg_count].len = len;
+	messages[msg_count].buf = buffer;
+	msg_count++;
 
 	data.msgs = messages;
-	data.nmsgs = 2;
+	data.nmsgs = msg_count;
 
-	status = ioctl(device->bus, I2C_RDWR, &data);
-
-	return status;
+	return (ioctl(device->bus, I2C_RDWR, &data) == 0);
 }
 
-int I2c_WriteThenWrite(I2cDevice *device, void *tx_buf1, uint8_t tx_len1, void *tx_buf2, uint8_t tx_len2)
+bool I2c_Write(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len)
 {
-	int status;
-	
-	uint8_t *buf;
-	uint8_t buf_len;
+	int msg_count = 0;
 	struct i2c_rdwr_ioctl_data data;
-	struct i2c_msg message;
+	struct i2c_msg messages[2];
 
-	buf_len = tx_len1 + tx_len2;
+	if (reg != I2C_REGISTER_NONE) {
+		messages[msg_count].addr = device->address;
+		messages[msg_count].flags = 0;
+		messages[msg_count].len = sizeof(reg);
+		messages[msg_count].buf = &reg;
+		msg_count++;
+	}
 
-	buf = (uint8_t *) malloc(buf_len);
-	memcpy(&buf[0], tx_buf1, tx_len1);
-	memcpy(&buf[tx_len1], tx_buf2, tx_len2);
-	
-	message.addr = device->address;
-	message.flags = 0;
-	message.len = buf_len;
-	message.buf = buf;
-	
-	data.msgs = &message;
-	data.nmsgs = 1;
+	messages[msg_count].addr = device->address;
+	messages[msg_count].flags = 0;
+	messages[msg_count].len = len;
+	messages[msg_count].buf = buffer;
+	msg_count++;
 
-	status = ioctl(device->bus, I2C_RDWR, &data);
+	data.msgs = messages;
+	data.nmsgs = msg_count;
 
-	free(buf);
-
-	return status;
+	return (ioctl(device->bus, I2C_RDWR, &data) == 0);
 }
 
 
