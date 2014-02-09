@@ -23,21 +23,13 @@
 #include <unistd.h>
 #include "delay.h"
 
-DelayFunc Delay_Ms;
-DelayFunc Delay_Us;
-
-static void delay_us(unsigned int useconds)
+void Delay_Us(unsigned int interval)
 {
-	usleep(useconds);
+	usleep(interval);
 }
 
-static void delay_ms(unsigned int mseconds)
+void Delay_Ms(unsigned int interval)
 {
-	usleep(mseconds * 1000);
+	usleep(interval * 1000);
 }
 
-void Delay_Init(void)
-{
-	Delay_Us = &delay_us;
-	Delay_Ms = &delay_ms;
-}
