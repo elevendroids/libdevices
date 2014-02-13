@@ -53,9 +53,9 @@ typedef struct {
  * @brief Intialize I2C bus
  * @param device - device id of requested bus (platform-specific)
  * @param speed - bus speed
- * @return true on success
+ * @return bus handle or zero if failed
  */
-bool I2c_Open(uint8_t device, I2cSpeed speed);
+int I2c_Open(uint8_t device, I2cSpeed speed);
 
 /**
  * @brief Close/Finalize I2C bus
@@ -67,7 +67,7 @@ void I2c_Close(int bus);
  * @brief Set I2C bus speed
  * @param speed - bus speed
  */
-void I2c_SetSpeed(I2cSpeed speed); //TODO: use reference to device/bus
+void I2c_SetSpeed(int bus, I2cSpeed speed); //TODO: use reference to device/bus
 
 /**
  * @brief Read data from a slave device

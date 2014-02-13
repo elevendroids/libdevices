@@ -66,6 +66,17 @@
 	#define MSP430_PORT_INT_COUNT	8
 #endif
 
+/*
+ * MCU pin definitions 
+ *
+ */
+
+#ifdef __MSP430G2553__
+	#define UCB0SCL		6
+	#define UCB0SDA		7
+#endif
+
+
 void Msp430_InitClock();
 
 uint16_t Msp430_GetSupplyVoltage(void);

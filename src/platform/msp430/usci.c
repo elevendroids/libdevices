@@ -24,182 +24,53 @@
 
 #ifdef __MSP430_HAS_USCI__
 
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include "platform/msp430/usci.h"
 
-#define USCI_MODE_I2C	BIT0
-#define USCI_MODE_SPI	BIT1
+UsciData UsciXmitData[USCI_MODULE_COUNT];
 
-volatile UsciMessage *UsciB_message;
-volatile uint8_t UsciB_message_counter;
-
-volatile uint8_t *UsciB_data;
-volatile uint8_t UsciB_data_counter;
-
-void UsciA_SetPrescaler(uint8_t value)
+void Usci_SetHandlers(int usci, UsciHandler tx_handler, UsciHandler rx_handler)
 {
-	UCA0BR0 = value;
-	UCA0BR1 = 0x00;
+	volatile UsciData *data = &UsciXmitData[usci];
+	data->tx_handler = tx_handler;
+	data->rx_handler = rx_handler;
 }
 
-void UsciB_SetPrescaler(uint8_t value)
+void Usci_SetData(int usci, void *data)
 {
-	UCB0BR0 = value;
-	UCB0BR1 = 0x00;
-}
-
-void UsciB_I2cInit(void)
-{
-	// Configure I2C pins
-	P1SEL 	|= BIT6 | BIT7;
-	P1SEL2 	|= BIT6 | BIT7;
-	
-	UCB0CTL1 = UCSSEL_2 + UCSWRST;
-	UCB0CTL0 = UCMST + UCMODE_3 + UCSYNC; 	// I2C master, synchronous
-
-	UCB0CTL1 &= ~UCSWRST;
-	IE2 |= UCB0TXIE | UCB0RXIE;
-	UCB0I2CIE |= UCNACKIE;
-	_EINT();
-}
-
-int UsciB_I2cTransaction(uint8_t address, UsciMessage *messages, uint8_t message_count)
-{
-	while (UCB0STAT & UCBBUSY);
-	// Set slave address
-	UCB0I2CSA = address;
-	//
-
-	UsciB_message = messages;
-	UsciB_message_counter = message_count - 1;
-	UsciB_data = UsciB_message->data;
-	UsciB_data_counter = UsciB_message->length;
-
-	if (UsciB_message->flags & USCI_MESSAGE_DIR_READ) {
-		UCB0CTL1 &= ~UCTR;
-		UCB0CTL1 |= UCTXSTT;
-		if ((UsciB_message_counter == 0) && (UsciB_data_counter == 1)) {
-			while (UCB0CTL1 & UCTXSTT);
-			UCB0CTL1 |= UCTXSTP;
-		}
-	} else {
-		UCB0CTL1 |= UCTR + UCTXSTT;
-	}
-	
-	_DINT();
-	if (UCB0STAT & UCBBUSY)
-		_bis_SR_register(LPM3_bits | GIE);
-	else
-		_EINT();
-	while (UCB0STAT & UCBBUSY) ;
-	return 0;
-}
-
-static void UsciB_NextMessage(void)
-{
-	UsciB_message_counter--;
-	UsciB_message++;
-	UsciB_data = UsciB_message->data;
-	UsciB_data_counter = UsciB_message->length;
-}
-
-static inline void UsciB_SpiMasterHandler()
-{
-	_NOP();
-}
-
-void UsciB_I2cRxHandler(void)
-{
-	volatile uint8_t *data;
-	UsciB_data_counter--;
-	data = UsciB_data++; // save current data pointer
-
-	if (UsciB_data_counter == 0) {
-		// fetch next message, if any
-		if (UsciB_message_counter) {
-			UsciB_NextMessage();
-			// check next message's direction
-			if (UsciB_message->flags & USCI_MESSAGE_DIR_READ) {
-				// set RESTART condition if needed
-				if ( !(UsciB_message->flags & USCI_I2C_NO_RESTART)) {
-					UCB0CTL1 |= UCTXSTT;
-					// set STOP if there's only one byte to read
-					if ((UsciB_message_counter == 0) && (UsciB_data_counter == 1)) {
-						while (UCB0CTL1 & UCTXSTT);
-						UCB0CTL1 |= UCTXSTP;
-					}
-				}
-			// switch to write mode and restart
-			} else {
-				UCB0CTL1 |= UCTR | UCTXSTT;
-			}
-		}
-	// if there's only one byte left to read, set STOP condition
-	} else if ((UsciB_data_counter == 1) && (UsciB_message_counter == 0)) {
-		UCB0CTL1 |= UCTXSTP;
-	}
- 
-	//read data byte, clear UCB0RXIFG, apply any of the conditions set above
-	*data = UCB0RXBUF;
-}
-
-void UsciB_I2cTxHandler(void) 
-{
-	if (UsciB_data_counter == 0) {
-		// fetch next message, if any
-		if (UsciB_message_counter) {
-			UsciB_NextMessage();
-			// if direction has changed, issue restart in read mode and exit
-			if (UsciB_message->flags & USCI_MESSAGE_DIR_READ) {
-				UCB0CTL1 &= ~UCTR;
-				UCB0CTL1 |= UCTXSTT;
-				if ((UsciB_message_counter == 0) && (UsciB_data_counter == 1)) {
-					while (UCB0CTL1 & UCTXSTT);
-					UCB0CTL1 |= UCTXSTP;
-				}
-				IFG2 &= ~UCB0TXIFG;
-				return;
-			// if direction has not changed, issue restart unless message is flagged "NO_RESTART"
-			} else if (!(UsciB_message->flags & USCI_I2C_NO_RESTART)) {
-				UCB0CTL1 |= UCTXSTT;
-				IFG2 &= ~UCB0TXIFG;
-				return;
-			}
-		// no more data to transmit - issue stop
-		} else {
-			UCB0CTL1 |= UCTXSTP;
-			IFG2 &= ~UCB0TXIFG;
-			return;
-		}
-	}
-	UCB0TXBUF = *UsciB_data++;
-	UsciB_data_counter--;
+	volatile UsciData *usci_data = &UsciXmitData[usci];
+	usci_data->data = data;	
 }
 
 #pragma vector=USCIAB0TX_VECTOR
-__interrupt void USCI_Transmit(void)
+__interrupt void USCIAB0_Transmit_ISR(void)
 {
-	if (IFG2 & UCB0RXIFG) {
-		switch (UCB0CTL0 & UCMODE_3) {
-			case UCMODE_3: UsciB_I2cRxHandler(); break;
-		}
-	} else if (IFG2 & UCB0TXIFG) {
-		switch (UCB0CTL0 & UCMODE_3) {
-			case UCMODE_0: UsciB_SpiMasterHandler(); break;
-			case UCMODE_3: UsciB_I2cTxHandler(); break;
-		}
-	}
-	if ((UsciB_data_counter == 0) && (UsciB_message_counter == 0))
+	UsciData *data = NULL;
+	
+	if ((IE2 & UCA0TXIE) && (IFG2 & UCA0TXIFG))
+		data = &UsciXmitData[USCI_A0];
+	else if (((IE2 & UCB0TXIE) && (IFG2 & UCB0TXIFG)) 
+				|| ((IE2 & UCB0RXIE) && (IFG2 & UCB0RXIFG) && (UCB0CTL0 & UCMODE_3)))
+		data = &UsciXmitData[USCI_B0];
+
+	if ((data && data->tx_handler) && (data->tx_handler(data->data)))
 		LPM3_EXIT;
 }
 
 #pragma vector=USCIAB0RX_VECTOR
-__interrupt void USCI_Receive(void)
+__interrupt void USCIAB0_Receive_ISR(void)
 {
-	if (UCB0STAT & UCNACKIFG) {
-		UCB0CTL1 |= UCTXSTP;
-		UCB0STAT &= ~UCNACKIFG;
-	}	
+	UsciData *data = NULL;
+
+	if ((IE2 & UCA0RXIE) && (IFG2 & UCA0RXIFG))
+		data = &UsciXmitData[USCI_A0];
+	else if (((IE2 & UCB0RXIE) && (IFG2 & UCB0RXIFG)) || (UCB0CTL0 & UCMODE_3))
+		data = &UsciXmitData[USCI_B0];
+
+	if ((data && data->rx_handler) && (data->rx_handler(data->data)))
+		LPM3_EXIT;
 }
 
 #endif /* __MSP430_HAS_USCI__ */
