@@ -28,8 +28,8 @@ SIZE=$(PREFIX)size
 STRIP=$(PREFIX)strip
 DOXYGEN=doxygen
 
-CFLAGS=--std=c99 -Wall -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES)
-CXXFLAGS=--std=c++11 -Wall -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES)
+CFLAGS=--std=c99 -Wall -pedantic -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES)
+CXXFLAGS=--std=c++11 -Wall -pedantic -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES)
 LDFLAGS=-Wl,-Map=$(TARGET).map
 
 ifneq ($(RELEASE),)
