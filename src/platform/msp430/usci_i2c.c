@@ -41,42 +41,42 @@ typedef struct {
 	uint8_t dir;
 } UsciI2cData;
 
-bool UsciB0_I2cXmitHandler(void *data)
+bool UsciB0_I2cXmitHandler(const UsciModule *usci, void *data)
 {
 	UsciI2cData *xmit_data = (UsciI2cData *)data;
-	if (IFG2 & UCB0RXIFG) {
+	if (*usci->ifg & usci->flags.rxifg) {
 		if (xmit_data->len) {
 			xmit_data->len--;
 			if (xmit_data->len == 1)
-				UCB0CTL1 |= UCTXSTP;
-			*xmit_data->buffer++ = UCB0RXBUF;
+				*usci->ctl1 |= UCTXSTP;
+			*xmit_data->buffer++ = *usci->rxbuf;
 		}
 		else
 			return true;
 	}
-	else if (IFG2 & UCB0TXIFG) {
+	else if (*usci->ifg & usci->flags.txifg) {
 		if (xmit_data->reg != I2C_REGISTER_NONE) {
-			UCB0TXBUF = xmit_data->reg;
+			*usci->txbuf = xmit_data->reg;
 			xmit_data->reg = I2C_REGISTER_NONE;
 		}
 		else {
 			if (xmit_data->dir == I2C_DIR_READ) {
-				UCB0CTL1 &= ~UCTR;
-				UCB0CTL1 |= UCTXSTT;
+				*usci->ctl1 &= ~UCTR;
+				*usci->ctl1 |= UCTXSTT;
 				if (xmit_data->len == 1) {
-					while (UCB0CTL1 & UCTXSTT);
-					UCB0CTL1 |= UCTXSTP;
+					while (*usci->ctl1 & UCTXSTT);
+					*usci->ctl1 |= UCTXSTP;
 				}
-				IFG2 &= ~UCB0TXIFG;
+				*usci->ifg &= ~usci->flags.txifg;
 			}
 			else {
 				if (xmit_data->len == 0) {
-					UCB0CTL1 |= UCTXSTP;
-					IFG2 &= ~UCB0TXIFG;
+					*usci->ctl1 |= UCTXSTP;
+					*usci->ifg &= ~usci->flags.txifg;
 					return true;
 				}
 				else {
-					UCB0TXBUF = *xmit_data->buffer++;
+					*usci->txbuf = *xmit_data->buffer++;
 					xmit_data->len--;
 				}
 			}
@@ -85,11 +85,11 @@ bool UsciB0_I2cXmitHandler(void *data)
 	return false;
 }
 
-static bool I2c_RxHandler(void *data)
+static bool I2c_RxHandler(const UsciModule *usci, void *data)
 {
-	if (UCB0STAT & UCNACKIFG) {
-		UCB0CTL1 |= UCTXSTP;
-		UCB0STAT &= ~UCNACKIFG;
+	if (*usci->stat & UCNACKIFG) {
+		*usci->ctl1 |= UCTXSTP;
+		*usci->stat &= ~UCNACKIFG;
 		return true;
 	}
 	return false;
@@ -97,14 +97,27 @@ static bool I2c_RxHandler(void *data)
 
 int I2c_Open(uint8_t device, I2cSpeed speed)
 {
-	Usci_SetHandlers(device, &UsciB0_I2cXmitHandler, &I2c_RxHandler);
-	UCB0CTL1 = UCSSEL_2 + UCSWRST;
-	UCB0CTL0 = UCMST + UCMODE_3 + UCSYNC;
-	UCB0CTL1 &= ~UCSWRST;
+	const UsciModule *usci;
+	uint16_t prescale;
+	//TODO: setup SDA/SCL pins
 
-	I2c_SetSpeed(device, speed);
-	IE2 |= UCB0TXIE | UCB0RXIE;
-	UCB0I2CIE |= UCNACKIE;
+	if (speed == I2C_SPEED_STANDARD)
+		prescale = (MSP430_CYCLES_PER_MS / 100);
+	else // there's no highspeed mode available
+		prescale = (MSP430_CYCLES_PER_MS / 400);
+
+	Usci_SetHandlers(device, &UsciB0_I2cXmitHandler, &I2c_RxHandler);
+
+	usci = Usci_GetModule(device);
+	*usci->ctl1 = UCSSEL_2 | UCSWRST;
+	*usci->ctl0 = UCMST | UCMODE_3 | UCSYNC;
+	*usci->ctl1 &= ~UCSWRST;
+
+	*usci->br0 = prescale;
+	*usci->br1 = 0x00;
+
+	*usci->ie |= usci->flags.txie | usci->flags.rxie;
+	*usci->i2cie |= UCNACKIE;
 	
 	_EINT();
 
@@ -113,6 +126,9 @@ int I2c_Open(uint8_t device, I2cSpeed speed)
 
 void I2c_Close(int bus)
 {
+	const UsciModule *usci = Usci_GetModule(bus);
+	*usci->ctl1 = UCSWRST;
+	//TODO: reset SDA/SCL pin mode registers
 	Usci_SetHandlers(bus, NULL, NULL);
 }
 
@@ -121,40 +137,44 @@ void I2c_SetSpeed(int bus, I2cSpeed speed)
 {
 	// Prescale value = SMCLK(kHz) / SCL(kHz)
 	uint16_t prescale;
+	const UsciModule *usci;
 
 	if (speed == I2C_SPEED_STANDARD)
 		prescale = (MSP430_CYCLES_PER_MS / 100);
 	else // there's no highspeed mode available
 		prescale = (MSP430_CYCLES_PER_MS / 400);
 
-	UCB0BR0 = prescale;
-	UCB0BR1 = 0x00;
+	usci = Usci_GetModule(bus);
+	*usci->br0 = prescale;
+	*usci->br1 = 0x00;
 }
 
 bool I2c_Read(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len)
 {
 	UsciI2cData data;
-	while (UCB0STAT & UCBBUSY) ;
+	const UsciModule *usci = Usci_GetModule(device->bus);
+	
+	while (*usci->stat & UCBBUSY);
 	data.reg = reg;
 	data.buffer = buffer;
 	data.len = len;
 	data.dir = I2C_DIR_READ;
 	Usci_SetData(device->bus, &data);
 	
-	UCB0I2CSA = device->address;
+	*usci->i2csa = device->address;
 	if (reg == I2C_REGISTER_NONE) {
-		UCB0CTL1 &= ~UCTR;
-		UCB0CTL1 |= UCTXSTT;
+		*usci->ctl1 &= ~UCTR;
+		*usci->ctl1 |= UCTXSTT;
 		if (len == 1) {
-			while (UCB0CTL1 & UCTXSTT);
-			UCB0CTL1 |= UCTXSTP;
+			while (*usci->ctl1 & UCTXSTT);
+			*usci->ctl1 |= UCTXSTP;
 		}	
 	}
 	else
-		UCB0CTL1 |= UCTR | UCTXSTT;
+		*usci->ctl1 |= UCTR | UCTXSTT;
 	
 	_DINT();
-	if (UCB0STAT & UCBBUSY)
+	if (*usci->stat & UCBBUSY)
 		_bis_SR_register(LPM3_bits | GIE);
 	else
 		_EINT();
@@ -167,18 +187,20 @@ bool I2c_Read(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len)
 bool I2c_Write(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len)
 {
 	UsciI2cData data;
-	while (UCB0STAT & UCBBUSY) ;
+	const UsciModule *usci = Usci_GetModule(device->bus);
+
+	while (*usci->stat & UCBBUSY);
 	data.reg = reg;
 	data.buffer = buffer;
 	data.len = len;
 	data.dir = I2C_DIR_WRITE;
 	Usci_SetData(device->bus, &data);
 	
-	UCB0I2CSA = device->address;
-	UCB0CTL1 |= UCTR | UCTXSTT;
+	*usci->i2csa = device->address;
+	*usci->ctl1 |= UCTR | UCTXSTT;
 	
 	_DINT();
-	if (UCB0STAT & UCBBUSY)
+	if (*usci->stat & UCBBUSY)
 		_bis_SR_register(LPM3_bits | GIE);
 	else
 		_EINT();

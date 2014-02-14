@@ -24,13 +24,54 @@
 #define USCI_H
 
 #include <msp430.h>
+#include <stdint.h>
 
 #define USCI_MODULE_COUNT	2
 
 #define USCI_A0				0
 #define USCI_B0				1
 
-typedef bool (*UsciHandler)(void *data);
+//TODO:
+//#define USCI_A1				2
+//#define USCI_B1				3
+
+/**
+ * Structure defining an USCI module
+ */
+typedef struct {
+	// USCI registers
+	volatile uint8_t *ctl0;			/// Control register 0
+	volatile uint8_t *ctl1;			/// Control register 1
+	volatile uint8_t *br0;			/// Baud rate control register 0
+	volatile uint8_t *br1;			/// Baud rate control register 1
+	volatile uint8_t *mctl;			/// Modulation control register (UART)
+	volatile uint8_t *stat;			/// Status register
+	volatile const uint8_t *rxbuf;	/// Receive buffer
+	volatile uint8_t *txbuf;		/// Transmit buffer
+	volatile uint8_t *abctl;		/// Auto baud control register (UART)
+	volatile uint8_t *irtctl;		/// IrDA transmit control register (UART)
+	volatile uint8_t *irrctl;		/// IrDA receive control register (UART)
+	volatile uint8_t *i2cie;		/// I2C interrupt enable register (I2C)
+	volatile uint16_t *i2coa;		/// I2C own address register (I2C)
+	volatile uint16_t *i2csa;		/// I2C slave address register (I2C)
+	// interrupt registers
+	volatile uint8_t *ie;			///	Interrupt enable register
+	volatile uint8_t *ifg;			/// Interrupt flag register
+	// flags	
+	struct {
+		const uint8_t rxifg;		/// Receive interrupt flag
+		const uint8_t txifg;		/// Transmit interrupt flag
+		const uint8_t rxie;			/// Receive interrupt enable
+		const uint8_t txie;			/// Transmit interrupt enable
+	} flags;
+	// pins
+	struct {
+		const uint8_t scl;			/// SCL pin
+		const uint8_t sda;			/// SDA pin
+	} pins;
+} UsciModule;
+
+typedef bool (*UsciHandler)(const UsciModule *usci, void *data);
 
 typedef struct {
 	UsciHandler tx_handler;
@@ -38,8 +79,7 @@ typedef struct {
 	void *data;
 } UsciData;
 
-extern UsciData UsciXmitData[USCI_MODULE_COUNT];
-
+const UsciModule *Usci_GetModule(int usci);
 void Usci_SetHandlers(int usci, UsciHandler tx_handler, UsciHandler rx_handler);
 void Usci_SetData(int usci, void *data);
 

@@ -67,7 +67,7 @@ void I2c_Close(int bus);
  * @brief Set I2C bus speed
  * @param speed - bus speed
  */
-void I2c_SetSpeed(int bus, I2cSpeed speed); //TODO: use reference to device/bus
+void I2c_SetSpeed(int bus, I2cSpeed speed);
 
 /**
  * @brief Read data from a slave device
