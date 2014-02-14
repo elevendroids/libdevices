@@ -70,10 +70,22 @@
  * MCU pin definitions 
  *
  */
-
 #ifdef __MSP430G2553__
+	#define UCA0RXD		1
+	#define UCA0TXD		2
+	
+	#define UCA0SOMI	1
+	#define UCA0SIMO	2
+	#define UCA0STE		5
+	#define UCA0CLK		4
+
 	#define UCB0SCL		6
 	#define UCB0SDA		7
+
+	#define UCB0SOMI	6
+	#define UCB0SIMO	7
+	#define UCB0STE		4
+	#define UCB0CLK		5
 #endif
 
 

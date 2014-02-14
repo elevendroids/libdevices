@@ -65,6 +65,14 @@ static const UsciModule usci_modules[USCI_MODULE_COUNT] = {
 			.txifg = UCA0TXIFG,
 			.rxie = UCA0RXIE,
 			.txie = UCA0TXIE
+		},
+		.pins = {
+			.rxd = UCA0RXD,
+			.txd = UCA0RXD,
+			.somi = UCA0SOMI,
+			.simo = UCA0SIMO,
+			.ste = UCA0STE,
+			.clk = UCA0CLK
 		}
 	},
 	// USCI B0
@@ -89,7 +97,11 @@ static const UsciModule usci_modules[USCI_MODULE_COUNT] = {
 		},
 		.pins = {
 			.scl = UCB0SCL,
-			.sda = UCB0SDA
+			.sda = UCB0SDA,
+			.somi = UCB0SOMI,
+			.simo = UCB0SIMO,
+			.ste = UCB0STE,
+			.clk = UCB0CLK
 		}
 	}
 	//TODO: USCI A1, B1, etc.
@@ -99,6 +111,7 @@ static UsciData usci_data[USCI_MODULE_COUNT];
 
 const UsciModule *Usci_GetModule(int usci)
 {
+	//TODO: check if usci is valid
 	return &usci_modules[usci];
 }
 
