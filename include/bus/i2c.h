@@ -65,6 +65,7 @@ void I2c_Close(int bus);
 
 /**
  * @brief Set I2C bus speed
+ * @param bus - bus handle
  * @param speed - bus speed
  */
 void I2c_SetSpeed(int bus, I2cSpeed speed);
