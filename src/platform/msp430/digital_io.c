@@ -125,7 +125,7 @@ void Pin_Set(int pin, uint8_t state)
 	const Msp430Port *port = pin_port[pin];
 	const uint8_t mask = pin_mask[pin];
 	if (state == PIN_STATE_LOW)
-		*port->out &= mask;
+		*port->out &= ~mask;
 	else
 		*port->out |= mask;
 }
