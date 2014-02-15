@@ -157,19 +157,19 @@ void I2c_SetSpeed(int bus, I2cSpeed speed)
 	*usci->br1 = 0x00;
 }
 
-bool I2c_Read(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len)
+bool I2c_Read(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
 {
 	UsciI2cData data;
-	const UsciModule *usci = Usci_GetModule(device->bus);
+	const UsciModule *usci = Usci_GetModule(bus);
 	
 	while (*usci->stat & UCBBUSY);
 	data.reg = reg;
 	data.buffer = buffer;
 	data.len = len;
 	data.dir = I2C_DIR_READ;
-	Usci_SetData(device->bus, &data);
+	Usci_SetData(bus, &data);
 	
-	*usci->i2csa = device->address;
+	*usci->i2csa = address;
 	if (reg == I2C_REGISTER_NONE) {
 		*usci->ctl1 &= ~UCTR;
 		*usci->ctl1 |= UCTXSTT;
@@ -188,23 +188,23 @@ bool I2c_Read(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len)
 		_EINT();
 //	while (UCB0STAT & UCBBUSY) ;
 
-	Usci_SetData(device->bus, NULL);
+	Usci_SetData(bus, NULL);
 	return (data.len == 0);
 }
 
-bool I2c_Write(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len)
+bool I2c_Write(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
 {
 	UsciI2cData data;
-	const UsciModule *usci = Usci_GetModule(device->bus);
+	const UsciModule *usci = Usci_GetModule(bus);
 
 	while (*usci->stat & UCBBUSY);
 	data.reg = reg;
 	data.buffer = buffer;
 	data.len = len;
 	data.dir = I2C_DIR_WRITE;
-	Usci_SetData(device->bus, &data);
+	Usci_SetData(bus, &data);
 	
-	*usci->i2csa = device->address;
+	*usci->i2csa = address;
 	*usci->ctl1 |= UCTR | UCTXSTT;
 	
 	_DINT();
@@ -214,7 +214,7 @@ bool I2c_Write(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len)
 		_EINT();
 //	while (UCB0STAT & UCBBUSY) ;
 
-	Usci_SetData(device->bus, NULL);
+	Usci_SetData(bus, NULL);
 	return (data.len == 0);
 
 }

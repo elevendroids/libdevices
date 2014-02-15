@@ -34,7 +34,7 @@
 
 #define I2C_BUS_DEVICE "/dev/i2c-%d"
 
-bool I2c_Open(uint8_t device, I2cSpeed speed)
+int I2c_Open(uint8_t device, I2cSpeed speed)
 {
 	char file_name[255];
 	snprintf(file_name, sizeof(file_name), I2C_BUS_DEVICE, device);
@@ -46,21 +46,21 @@ void I2c_Close(int bus)
 	close(bus);
 }
 
-bool I2c_Read(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len)
+bool I2c_Read(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
 {
 	int msg_count = 0;
 	struct i2c_rdwr_ioctl_data data;
 	struct i2c_msg messages[2];
 
 	if (reg != I2C_REGISTER_NONE) {
-		messages[msg_count].addr = device->address;
+		messages[msg_count].addr = address;
 		messages[msg_count].flags = 0;
 		messages[msg_count].len = sizeof(reg);
 		messages[msg_count].buf = &reg;
 		msg_count++;
 	}
 
-	messages[msg_count].addr = device->address;
+	messages[msg_count].addr = address;
 	messages[msg_count].flags = I2C_M_RD;
 	messages[msg_count].len = len;
 	messages[msg_count].buf = buffer;
@@ -69,24 +69,24 @@ bool I2c_Read(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len)
 	data.msgs = messages;
 	data.nmsgs = msg_count;
 
-	return (ioctl(device->bus, I2C_RDWR, &data) == 0);
+	return (ioctl(bus, I2C_RDWR, &data) == 0);
 }
 
-bool I2c_Write(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len)
+bool I2c_Write(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
 {
 	int msg_count = 0;
 	struct i2c_rdwr_ioctl_data data;
 	struct i2c_msg messages[2];
 
 	if (reg != I2C_REGISTER_NONE) {
-		messages[msg_count].addr = device->address;
+		messages[msg_count].addr = address;
 		messages[msg_count].flags = 0;
 		messages[msg_count].len = sizeof(reg);
 		messages[msg_count].buf = &reg;
 		msg_count++;
 	}
 
-	messages[msg_count].addr = device->address;
+	messages[msg_count].addr = address;
 	messages[msg_count].flags = 0;
 	messages[msg_count].len = len;
 	messages[msg_count].buf = buffer;
@@ -95,7 +95,7 @@ bool I2c_Write(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len)
 	data.msgs = messages;
 	data.nmsgs = msg_count;
 
-	return (ioctl(device->bus, I2C_RDWR, &data) == 0);
+	return (ioctl(bus, I2C_RDWR, &data) == 0);
 }
 
 

@@ -72,70 +72,76 @@ void I2c_SetSpeed(int bus, I2cSpeed speed);
 
 /**
  * @brief Read data from a slave device
- * @param device - pointer to a device structure
+ * @param bus - bus handle
+ * @param address - slave device address
  * @param reg - register address or I2C_REGISTER_NONE if not reading from a register
  * @param buffer - RX buffer
  * @param len - RX buffer length
  * @return true on success
  */
-bool I2c_Read(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len);
+bool I2c_Read(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len);
 
 /**
  * @brief Write data to a slave device
- * @param device - pointer to device structure
+ * @param bus - bus handle
+ * @param address - slave device address
  * @param reg - register address or I2C_REGISTER_NONE if not writing to a register
  * @param buffer - TX buffer
  * @param len - TX buffer length
  * @return true on success
  */
-bool I2c_Write(I2cDevice *device, uint8_t reg, void *buffer, uint8_t len);
+bool I2c_Write(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len);
 
 /** 
  * @brief Read one byte from a slave device
- * @param device - pointer to a device structure
+ * @param bus - bus handle
+ * @param address - slave device address
  * @param reg - register address or I2C_REGISTER_NONE if not reading from a register
  * @param value - destination pointer
  * @return true on success
  */
-inline static bool I2c_ReadByte(I2cDevice *device, uint8_t reg, uint8_t *value)
+inline static bool I2c_ReadByte(int bus, uint8_t address, uint8_t reg, uint8_t *value)
 {
-	return I2c_Read(device, reg, &value, sizeof(*value));
+	return I2c_Read(bus, address, reg, &value, sizeof(*value));
 }
 
 /** 
  * @brief Read one word from a slave device
- * @param device - pointer to a device structure
+ * @param bus - bus handle
+ * @param address - slave device address
  * @param reg - register address or I2C_REGISTER_NONE if not reading from a register
  * @param value - destination pointer
  * @return true on success
  */
-inline static bool I2c_ReadWord(I2cDevice *device, uint8_t reg, uint16_t *value)
+inline static bool I2c_ReadWord(int bus, uint8_t address, uint8_t reg, uint16_t *value)
 {
-	return I2c_Read(device, reg, &value, sizeof(*value));
+	return I2c_Read(bus, address, reg, &value, sizeof(*value));
 }
 
 /** 
  * @brief Write one byte to a slave device
- * @param device - pointer to a device structure
+ * @param bus - bus handle
+ * @param address - slave device address
  * @param reg - register address or I2C_REGISTER_NONE if not writing to a register
  * @param value - value to be written
  * @return true on success
  */
-inline static bool I2c_WriteByte(I2cDevice *device, uint8_t reg, uint8_t value)
+inline static bool I2c_WriteByte(int bus, uint8_t address, uint8_t reg, uint8_t value)
 {
-	return I2c_Write(device, reg, &value, sizeof(value));
+	return I2c_Write(bus, address, reg, &value, sizeof(value));
 }
 
 /** 
  * @brief Write one word to a slave device
- * @param device - pointer to a device structure
+ * @param bus - bus handle
+ * @param address - slave device address
  * @param reg - register address or I2C_REGISTER_NONE if not writing to a register
  * @param value - value to be written
  * @return true on success
  */
-inline static bool I2c_WriteWord(I2cDevice *device, uint8_t reg, uint16_t value)
+inline static bool I2c_WriteWord(int bus, uint8_t address, uint8_t reg, uint16_t value)
 {
-	return I2c_Write(device, reg, &value, sizeof(value));
+	return I2c_Write(bus, address, reg, &value, sizeof(value));
 }
 
 #endif /* I2C_H */

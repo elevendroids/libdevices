@@ -27,12 +27,12 @@
 
 int Mcp23017_WriteRegister(I2cDevice *device, uint8_t reg, uint8_t value)
 {
-	return I2c_WriteByte(device, reg, value);
+	return I2c_WriteByte(device->bus, device->address, reg, value);
 }
 
 int Mcp23017_ReadRegister(I2cDevice *device, uint8_t reg, uint8_t *value)
 {
-	return I2c_ReadByte(device, reg, value);
+	return I2c_ReadByte(device->bus, device->address, reg, value);
 }
 
 int Mcp23017_Init(I2cDevice *device)
@@ -42,42 +42,42 @@ int Mcp23017_Init(I2cDevice *device)
 
 int Mcp23017_SetPortDirection(I2cDevice *device, uint8_t port, uint8_t value)
 {
-	return I2c_WriteByte(device, MCP23X17_SEQ_IODIRA + port, value);
+	return I2c_WriteByte(device->bus, device->address, MCP23X17_SEQ_IODIRA + port, value);
 }
 
 int Mcp23017_GetPortDirection(I2cDevice *device, uint8_t port, uint8_t *value) 
 {
-	return I2c_ReadByte(device, MCP23X17_SEQ_IODIRA + port, value);
+	return I2c_ReadByte(device->bus, device->address, MCP23X17_SEQ_IODIRA + port, value);
 }
 
 int Mcp23017_ReadPortA(I2cDevice *device, uint8_t *value)
 {
-	return I2c_ReadByte(device, MCP23X17_SEQ_GPIOA, value);
+	return I2c_ReadByte(device->bus, device->address, MCP23X17_SEQ_GPIOA, value);
 }
 
 int Mcp23017_ReadPortB(I2cDevice *device, uint8_t *value)
 {
-	return I2c_ReadByte(device, MCP23X17_SEQ_GPIOB, value);
+	return I2c_ReadByte(device->bus, device->address, MCP23X17_SEQ_GPIOB, value);
 }
 
 int Mcp23017_ReadPorts(I2cDevice *device, Mcp23x17PortsData *data)
 {
-	return I2c_Read(device, MCP23X17_SEQ_GPIOA, data, sizeof(data->as_word));
+	return I2c_Read(device->bus, device->address, MCP23X17_SEQ_GPIOA, data, sizeof(data->as_word));
 }
 
 int Mcp23017_WritePortA(I2cDevice *device, uint8_t value)
 {
-	return I2c_WriteByte(device, MCP23X17_SEQ_GPIOA, value);
+	return I2c_WriteByte(device->bus, device->address, MCP23X17_SEQ_GPIOA, value);
 }
 
 int Mcp23017_WritePortB(I2cDevice *device, uint8_t value)
 {
-	return I2c_WriteByte(device, MCP23X17_SEQ_GPIOB, value);
+	return I2c_WriteByte(device->bus, device->address, MCP23X17_SEQ_GPIOB, value);
 }
 
 int Mcp23017_WritePorts(I2cDevice *device, Mcp23x17PortsData data)
 {
-	return I2c_Write(device, MCP23X17_SEQ_GPIOA, &data, sizeof(data));
+	return I2c_Write(device->bus, device->address, MCP23X17_SEQ_GPIOA, &data, sizeof(data));
 }
 
 int Mcp23017_SetPinA(I2cDevice *device, uint8_t pin)
