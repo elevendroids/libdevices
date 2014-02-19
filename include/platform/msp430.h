@@ -88,6 +88,13 @@
 	#define UCB0CLK		5
 #endif
 
+/// Primary peripherial mode selection
+#define MSP430_PORT_MODE_SEL		0x40
+#define MSP430_PIN_MODE_SEL			0x40
+/// Secondary peripherial mode selection
+#define MSP430_PORT_MODE_SEL2		0x80
+#define MSP430_PIN_MODE_SEL2		0x80
+
 
 void Msp430_InitClock();
 

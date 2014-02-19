@@ -45,18 +45,47 @@ typedef struct {
 	volatile uint8_t *ie;		///< Interrupt enable register
 	volatile uint8_t *ies;		///< Interrupt mode register
 	volatile uint8_t *ifg;		///< Interrupt flag register
+	volatile uint8_t *sel;		///< Primary peripherial module function select register
+	volatile uint8_t *sel2;		///< Secondary peripherial module function select register
 } Msp430Port;
 
 /**
  * @brief Array of available IO ports.
  */
 static const Msp430Port ports[] = {
-	{ &P1OUT, &P1IN, &P1DIR, &P1REN, &P1IE, &P1IES, &P1IFG }
+	{
+		&P1OUT, 
+		&P1IN,
+		&P1DIR,
+		&P1REN,
+		&P1IE,
+		&P1IES,
+		&P1IFG,
+		&P1SEL,
+		&P1SEL2
+	}
 #ifdef MSP430_HAS_PORT2
-	,{ &P2OUT, &P2IN, &P2DIR, &P2REN, &P2IE, &P2IES, &P2IFG } 
+	,{ 
+		&P2OUT,
+		&P2IN,
+		&P2DIR,
+		&P2REN,
+		&P2IE,
+		&P2IES,
+		&P2IFG,
+		&P2SEL,
+		&P2SEL2
+	} 
 #endif
 #ifdef MSP430_HAS_PORT3
-	,{ &P3OUT, &P3IN, &P3DIR, &P3REN, &P3SEL }
+	,{
+		&P3OUT,
+		&P3IN,
+		&P3DIR,
+		&P3REN, 
+		.sel = &P3SEL,
+		.sel2 = &P3SEL2
+	}
 #endif
 };
 
@@ -99,24 +128,34 @@ uint8_t Port_Read(int port)
 void Port_SetMode(int port, int mode)
 {
 	const Msp430Port *port_ptr = &ports[port];
-	if (mode & PORT_MODE_OUTPUT) {
-		*port_ptr->ren = 0x00;
-		*port_ptr->out = 0x00;
-		*port_ptr->dir = 0xFF;
+	uint8_t ren = 0x00;
+	uint8_t out = 0x00;
+	uint8_t dir = 0x00;
+	uint8_t sel = 0x00;
+	uint8_t sel2 = 0x00;
+
+	if (mode & PORT_MODE_OUTPUT) 
+		dir = 0xFF;
+	else if (mode & (PORT_MODE_PULLUP | PORT_MODE_PULLDOWN)) {
+		ren = 0xFF;
+		if (mode & PORT_MODE_PULLUP)
+			out = 0xFF;
 	}
-	else {
-		*port_ptr->dir = 0x00;
-		if (mode & (PORT_MODE_PULLUP | PORT_MODE_PULLDOWN)) {
-			*port_ptr->ren = 0xFF;
-			if (mode & PORT_MODE_PULLUP)
-				*port_ptr->out = 0xFF;
-			else
-				*port_ptr->out = 0x00;
-		}
-		else {
-			*port_ptr->ren = 0x00;
-			*port_ptr->out = 0x00;
-		}
+
+	*port_ptr->ren = ren;
+	*port_ptr->out = out;
+	*port_ptr->dir = dir;
+
+	if (port_ptr->sel) {
+		if (mode & MSP430_PORT_MODE_SEL)
+			sel = 0xFF;
+		*port_ptr->sel = sel;
+	}
+
+	if (port_ptr->sel2) {
+		if (mode & MSP430_PORT_MODE_SEL2)
+			sel2 = 0xFF;
+		*port_ptr->sel2 = sel2;
 	}
 }
 
@@ -171,6 +210,20 @@ void Pin_SetMode(int pin, int mode)
 			*port->ren &= ~mask;
 			*port->out &= ~mask;
 		}
+	}
+
+	if (port->sel) {
+		if (mode & MSP430_PIN_MODE_SEL)
+			*port->sel |= mask;
+		else
+			*port->sel &= ~mask;
+	}
+
+	if (port->sel2) {
+		if (mode & MSP430_PIN_MODE_SEL2)
+			*port->sel2 |= mask;
+		else
+			*port->sel2 &= ~mask;
 	}
 }
 
