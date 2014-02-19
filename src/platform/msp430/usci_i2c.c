@@ -35,6 +35,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include "digital_io.h"
 #include "bus/i2c.h"
 #include "platform/msp430.h"
 #include "platform/msp430/usci.h"
@@ -107,7 +108,6 @@ int I2c_Open(uint8_t device, I2cSpeed speed)
 {
 	const UsciModule *usci;
 	uint16_t prescale;
-	//TODO: setup SDA/SCL pins
 
 	if (speed == I2C_SPEED_STANDARD)
 		prescale = (MSP430_CYCLES_PER_MS / 100);
@@ -117,6 +117,10 @@ int I2c_Open(uint8_t device, I2cSpeed speed)
 	Usci_SetHandlers(device, &UsciB0_I2cXmitHandler, &I2c_RxHandler);
 
 	usci = Usci_GetModule(device);
+
+	Pin_SetMode(usci->pins.scl, PIN_MODE_INPUT | MSP430_PIN_MODE_SEL | MSP430_PIN_MODE_SEL2);
+	Pin_SetMode(usci->pins.sda, PIN_MODE_INPUT | MSP430_PIN_MODE_SEL | MSP430_PIN_MODE_SEL2);
+
 	*usci->ctl1 = UCSSEL_2 | UCSWRST;
 	*usci->ctl0 = UCMST | UCMODE_3 | UCSYNC;
 	*usci->ctl1 &= ~UCSWRST;
@@ -136,7 +140,10 @@ void I2c_Close(int bus)
 {
 	const UsciModule *usci = Usci_GetModule(bus);
 	*usci->ctl1 = UCSWRST;
-	//TODO: reset SDA/SCL pin mode registers
+
+	Pin_SetMode(usci->pins.scl, PIN_MODE_INPUT);
+	Pin_SetMode(usci->pins.sda, PIN_MODE_INPUT);
+
 	Usci_SetHandlers(bus, NULL, NULL);
 }
 
