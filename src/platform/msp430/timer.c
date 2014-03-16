@@ -30,10 +30,11 @@
 volatile static unsigned int miliseconds;
 volatile static unsigned int sleep_ms;
 
-//TODO: Make it board-specific
-#define USE_EXTERNAL_CRYSTAL
+#ifndef USE_EXTERNAL_CRYSTAL
+#define USE_EXTERNAL_CRYSTAL 0
+#endif
 
-#ifdef USE_EXTERNAL_CRYSTAL
+#if (USE_EXTERNAL_CRYSTAL == 1)
 static const uint16_t us_per_tick = 1953;
 
 void Timer_Init(void) 
