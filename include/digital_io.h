@@ -33,6 +33,7 @@
 #define _DIGITAL_IO_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define PORT_MODE_INPUT		0x00
 #define PORT_MODE_OUTPUT	0x01
@@ -67,41 +68,41 @@ typedef void (*PinIntCallback)(void);
  * @param port an output port id
  * @param value a value to write
  */
-void Port_Write(int port, uint8_t value);
+void Port_Write(unsigned int port, uint8_t value);
 
 /**
  * @brief Read a byte from a port
  * @param port an input port id
  * @returns byte read read from the port
  */
-uint8_t Port_Read(int port);
+uint8_t Port_Read(unsigned int port);
 
 /**
  * @brief Set port mode
  * @param port a port id
  * @param mode
  */
-void Port_SetMode(int port, int mode);
+void Port_SetMode(unsigned int port, unsigned int mode);
 
 /**
  * @brief Set an output pin
  * @param pin an output pin id
  * @param state new pin state
  */
-void Pin_Set(int pin, uint8_t state);
+void Pin_Set(unsigned int pin, bool state);
 
 /**
  * @brief Gets an input pin state
  * @param pin an input pin id
  * @returns #PIN_STATE_LOW or #PIN_STATE_HIGH
  */
-int Pin_Get(int pin);
+bool Pin_Get(unsigned int pin);
 
 /**
  * @brief Toggle an output pin
  * @param pin an output pin id
  */
-void Pin_Toggle(int pin);
+void Pin_Toggle(unsigned int pin);
 
 /**
  * @brief Set a pin mode - direction, pullup/pulldown resistors (if applicable)
@@ -116,7 +117,11 @@ void Pin_Toggle(int pin);
  * Enabling pullup/pulldown has no effect if hardware doesn't support it.
  * 
  */
-void Pin_SetMode(int pin, int mode);
+void Pin_SetMode(unsigned int pin, unsigned int mode);
+
+void Pin_SetPulldown(unsigned int pin, bool pulldown);
+
+void Pin_SetPullup(unsigned int pin, bool pullup);
 
 /**
  * @brief
@@ -128,13 +133,13 @@ void Pin_SetMode(int pin, int mode);
  * Setting interrupt handler on a non-interrupt capable pin has no effect.
  *
  */
-void Pin_AttachInterrupt(int pin, PinIntCallback callback, int mode);
+void Pin_AttachInterrupt(unsigned int pin, PinIntCallback callback, unsigned int mode);
 
 /**
  * @brief Disable pin interrupt
  * @param pin a pin id
  */
-void Pin_DetachInterrupt(int pin);
+void Pin_DetachInterrupt(unsigned int pin);
 
 
 #endif /* _DIGITAL_IO_H */
