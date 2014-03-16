@@ -20,6 +20,7 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 */
+#include <stdbool.h>
 #include "byteswap.h"
 #include "common.h"
 #include "delay.h"
@@ -37,10 +38,10 @@ static CalibrationData cal_data;
 
 static const uint8_t wait_time_ms[] = { 5, 8, 14, 26 };
 
-int Bmp085_Init( I2cDevice *device)
+bool Bmp085_Init( I2cDevice *device)
 {
-	int status = I2c_Read(device->bus, device->address, BMP085_REG_AC1, &cal_data, sizeof(cal_data));
-	if (status != STATUS_OK)
+	bool status = I2c_Read(device->bus, device->address, BMP085_REG_AC1, &cal_data, sizeof(cal_data));
+	if (! status)
 		return status;
 
 	// byte-swap all values
@@ -50,24 +51,24 @@ int Bmp085_Init( I2cDevice *device)
 		value_ptr++;
 	}
 
-	return STATUS_OK;
+	return true;
 }
 
-static int Bmp085_ReadTemperatureRef(I2cDevice *device, int32_t *value)
+static bool Bmp085_ReadTemperatureRef(I2cDevice *device, int32_t *value)
 {
-	int status;
+	bool status;
 	uint8_t data[2];
 	uint16_t ut;
 	int32_t x1, x2;
 	
 	// start temperature conversion
 	status = I2c_WriteByte(device->bus, device->address, 0xF4, 0x2E);
-	if (status != STATUS_OK) 
+	if (! status) 
 		return status;
 
 	Delay_Ms(5);
 	status = I2c_Read(device->bus, device->address, 0xF6, &data, sizeof(data));
-	if (status != STATUS_OK)
+	if (! status)
 		return status;
 
 	ut = ((uint16_t)data[0] << 8) + data[1];
@@ -76,16 +77,16 @@ static int Bmp085_ReadTemperatureRef(I2cDevice *device, int32_t *value)
 	x2 = ((int32_t)cal_data.mc << 11) / (x1 + cal_data.md);
 
 	*value = (x1 + x2);
-	return STATUS_OK;
+	return true;
 }
 
 int Bmp085_ReadTemperature(I2cDevice *device, int16_t *value)
 {
-	int status;
+	bool status;
 	int32_t reference;
 
 	status = Bmp085_ReadTemperatureRef(device, &reference);
-	if (status != STATUS_OK)
+	if (! status)
 		return status;
 
 	*value = (reference + 8) >> 4;
@@ -94,22 +95,22 @@ int Bmp085_ReadTemperature(I2cDevice *device, int16_t *value)
 
 int Bmp085_ReadPressure(I2cDevice *device, uint8_t oversampling, int32_t *value)
 {
-	int status;
+	bool status;
 	uint8_t data[3];
 	int32_t b3, b5, b6, b6_2, x1, x2, x3, up, p;
 	uint32_t b4, b7;
 
 	status = Bmp085_ReadTemperatureRef(device, &b5);
-	if (status != STATUS_OK)
+	if (! status)
 		return status;
 
 	status = I2c_WriteByte(device->bus, device->address, 0xF4, 0x34 + (oversampling << 6));
-	if (status != STATUS_OK) 
+	if (! status) 
 		return status;
 
 	Delay_Ms(wait_time_ms[oversampling]);
 	status = I2c_Read(device->bus, device->address, 0xF6, &data, sizeof(data));
-	if (status != STATUS_OK)
+	if (! status)
 		return status;
 	
 	up = (((int32_t)data[0] << 16) + ((int32_t)data[1] << 8) + data[0]) >> (8 - oversampling);
@@ -143,25 +144,25 @@ int Bmp085_ReadPressure(I2cDevice *device, uint8_t oversampling, int32_t *value)
 
 int Bmp085_ReadChipId(I2cDevice *device)
 {
-	int status;
+	bool status;
 	uint8_t id;
 	status = I2c_ReadByte(device->bus, device->address, 0xD0, &id);
-	if (status != STATUS_OK) {
-		return status;
-	} else {
+	if (status) {
 		return id;
+	} else {
+		return status;
 	}
 }
 
 int Bmp085_ReadChipVersion(I2cDevice *device)
 {
-	int status;
+	bool status;
 	uint8_t version;
 	status = I2c_ReadByte(device->bus, device->address, 0xD1, &version);
-	if (status != STATUS_OK) {
-		return status;
-	} else {
+	if (status) {
 		return version;
+	} else {
+		return status;
 	}
 }
 
