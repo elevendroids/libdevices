@@ -38,12 +38,6 @@
 #include "platform/msp430.h"
 #include "platform/msp430/usci.h"
 
-typedef struct {
-	UsciHandler tx_handler; ///< Transmit handler. Note, that for I2C it's called for both TX and RX
-	UsciHandler rx_handler; ///< Receive handler. Note, that for I2C it handles bus state change interrupts
-	void *data;				///< Bus-specific data
-} UsciData;
-
 static const UsciModule usci_modules[USCI_MODULE_COUNT] = {
 	// USCI A0
 	{
@@ -68,7 +62,7 @@ static const UsciModule usci_modules[USCI_MODULE_COUNT] = {
 		},
 		.pins = {
 			.rxd = UCA0RXD,
-			.txd = UCA0RXD,
+			.txd = UCA0TXD,
 			.somi = UCA0SOMI,
 			.simo = UCA0SIMO,
 			.ste = UCA0STE,
@@ -107,70 +101,10 @@ static const UsciModule usci_modules[USCI_MODULE_COUNT] = {
 	//TODO: USCI A1, B1, etc.
 };
 
-static UsciData usci_data[USCI_MODULE_COUNT];
-
-const UsciModule *Usci_GetModule(int usci)
+const __attribute__((noinline)) UsciModule *Usci_GetModule(int usci)
 {
 	//TODO: check if usci is valid
 	return &usci_modules[usci];
-}
-
-void Usci_SetHandlers(int usci, UsciHandler tx_handler, UsciHandler rx_handler)
-{
-	volatile UsciData *data = &usci_data[usci];
-	data->tx_handler = tx_handler;
-	data->rx_handler = rx_handler;
-}
-
-void Usci_SetData(int usci, void *data)
-{
-	volatile UsciData *usci_handler_data = &usci_data[usci];
-	usci_handler_data->data = data;	
-}
-
-#pragma vector=USCIAB0TX_VECTOR
-__interrupt void USCIAB0_Transmit_ISR(void)
-{
-	int usci_index;
-	UsciData *data = NULL;
-	const UsciModule *usci;
-	
-	if ((IE2 & UCA0TXIE) && (IFG2 & UCA0TXIFG))
-		usci_index = USCI_A0;
-	else if (((IE2 & UCB0TXIE) && (IFG2 & UCB0TXIFG)) 
-				|| ((IE2 & UCB0RXIE) && (IFG2 & UCB0RXIFG) && (UCB0CTL0 & UCMODE_3)))
-		usci_index = USCI_B0;
-	else
-		return;
-
-	data = &usci_data[usci_index];
-	if (data && data->tx_handler) {
-		usci = Usci_GetModule(usci_index);
-		if (data->tx_handler(usci, data->data))
-			LPM3_EXIT;
-	}
-}
-
-#pragma vector=USCIAB0RX_VECTOR
-__interrupt void USCIAB0_Receive_ISR(void)
-{
-	int usci_index;
-	UsciData *data = NULL;
-	const UsciModule *usci;
-
-	if ((IE2 & UCA0RXIE) && (IFG2 & UCA0RXIFG))
-		usci_index = USCI_A0;
-	else if (((IE2 & UCB0RXIE) && (IFG2 & UCB0RXIFG)) || (UCB0CTL0 & UCMODE_3))
-		usci_index = USCI_B0;
-	else
-		return;
-
-	data = &usci_data[usci_index];
-	if (data && data->rx_handler) {
-		usci = Usci_GetModule(usci_index);
-		if (data->rx_handler(usci, data->data))
-			LPM3_EXIT;
-	}
 }
 
 #endif /* __MSP430_HAS_USCI__ */

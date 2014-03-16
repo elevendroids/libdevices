@@ -32,6 +32,7 @@
 #include <msp430.h>
 
 #ifdef __MSP430_HAS_USCI__
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -44,64 +45,90 @@
 #define I2C_DIR_WRITE	1
 
 typedef struct {
+	const UsciModule *usci;
 	uint8_t reg;
 	uint8_t *buffer;
 	uint8_t len;
 	uint8_t dir;
 } UsciI2cData;
 
-bool UsciB0_I2cXmitHandler(const UsciModule *usci, void *data)
+static bool usci_i2c_rx_handler(UsciI2cData *data)
 {
-	UsciI2cData *xmit_data = (UsciI2cData *)data;
-	if (*usci->ifg & usci->flags.rxifg) {
-		if (xmit_data->len) {
-			xmit_data->len--;
-			if (xmit_data->len == 1)
-				*usci->ctl1 |= UCTXSTP;
-			*xmit_data->buffer++ = *usci->rxbuf;
-		}
-		else
-			return true;
+	const UsciModule *usci = data->usci;
+	bool result = true;
+
+	if (data->len > 0) {
+		data->len--;
+		
+		*data->buffer++ = *usci->rxbuf;
+		// send stop if there's only one byte left
+		if (data->len == 1)
+			*usci->ctl1 |= UCTXSTP;
+		result = (data->len == 0);
 	}
-	else if (*usci->ifg & usci->flags.txifg) {
-		if (xmit_data->reg != I2C_REGISTER_NONE) {
-			*usci->txbuf = xmit_data->reg;
-			xmit_data->reg = I2C_REGISTER_NONE;
+
+	return result;
+}
+
+static bool usci_i2c_tx_handler(UsciI2cData *data)
+{
+	const UsciModule *usci = data->usci;
+	bool result = false;
+
+	if (data->reg != I2C_REGISTER_NONE) {
+		*usci->txbuf = data->reg;
+		data->reg = I2C_REGISTER_NONE;
+	}
+	else {
+		/* send restart if the direction is about to change */
+		if (data->dir == I2C_DIR_READ) {
+			*usci->ctl1 &= ~UCTR;
+			*usci->ctl1 |= UCTXSTT;
+			if (data->len == 1) {
+				while (*usci->ctl1 & UCTXSTT);
+				*usci->ctl1 |= UCTXSTP;
+			}
+			*usci->ifg &= ~usci->flags.txifg;
 		}
 		else {
-			if (xmit_data->dir == I2C_DIR_READ) {
-				*usci->ctl1 &= ~UCTR;
-				*usci->ctl1 |= UCTXSTT;
-				if (xmit_data->len == 1) {
-					while (*usci->ctl1 & UCTXSTT);
-					*usci->ctl1 |= UCTXSTP;
-				}
+			if (data->len == 0) {
+				*usci->ctl1 |= UCTXSTP;
 				*usci->ifg &= ~usci->flags.txifg;
+				result = true;
 			}
 			else {
-				if (xmit_data->len == 0) {
-					*usci->ctl1 |= UCTXSTP;
-					*usci->ifg &= ~usci->flags.txifg;
-					return true;
-				}
-				else {
-					*usci->txbuf = *xmit_data->buffer++;
-					xmit_data->len--;
-				}
+				*usci->txbuf = *data->buffer++;
+				data->len--;
 			}
 		}
+	}
+	return result;
+}
+
+static bool UsciB0_I2cXmitHandler(const UsciModule *dummy, void *data)
+{
+	UsciI2cData *xmit_data = (UsciI2cData *)data;
+	const UsciModule *usci = xmit_data->usci;
+
+	if (*usci->ifg & usci->flags.rxifg) {
+		return usci_i2c_rx_handler(xmit_data);
+	}
+	else if (*usci->ifg & usci->flags.txifg) {
+		return usci_i2c_tx_handler(xmit_data);
 	}
 	return false;
 }
 
-static bool I2c_RxHandler(const UsciModule *usci, void *data)
+static bool I2c_RxHandler(const UsciModule *dummy, void *data)
 {
+	bool result = false;
+	const UsciModule *usci = ((UsciI2cData *)data)->usci;
 	if (*usci->stat & UCNACKIFG) {
 		*usci->ctl1 |= UCTXSTP;
 		*usci->stat &= ~UCNACKIFG;
-		return true;
+		result = true;
 	}
-	return false;
+	return result;
 } 
 
 int I2c_Open(uint8_t device, I2cSpeed speed)
@@ -118,8 +145,8 @@ int I2c_Open(uint8_t device, I2cSpeed speed)
 
 	usci = Usci_GetModule(device);
 
-	Pin_SetMode(usci->pins.scl, PIN_MODE_INPUT | MSP430_PIN_MODE_SEL | MSP430_PIN_MODE_SEL2);
-	Pin_SetMode(usci->pins.sda, PIN_MODE_INPUT | MSP430_PIN_MODE_SEL | MSP430_PIN_MODE_SEL2);
+	Msp430_SetPinFunction(usci->pins.scl, MSP430_PIN_FUNCTION_1 | MSP430_PIN_FUNCTION_2);
+	Msp430_SetPinFunction(usci->pins.sda, MSP430_PIN_FUNCTION_1 | MSP430_PIN_FUNCTION_2);
 
 	*usci->ctl1 = UCSSEL_2 | UCSWRST;
 	*usci->ctl0 = UCMST | UCMODE_3 | UCSYNC;
@@ -141,8 +168,8 @@ void I2c_Close(int bus)
 	const UsciModule *usci = Usci_GetModule(bus);
 	*usci->ctl1 = UCSWRST;
 
-	Pin_SetMode(usci->pins.scl, PIN_MODE_INPUT);
-	Pin_SetMode(usci->pins.sda, PIN_MODE_INPUT);
+	Msp430_SetPinFunction(usci->pins.scl, MSP430_PIN_FUNCTION_NORMAL);
+	Msp430_SetPinFunction(usci->pins.sda, MSP430_PIN_FUNCTION_NORMAL);
 
 	Usci_SetHandlers(bus, NULL, NULL);
 }
@@ -169,7 +196,8 @@ bool I2c_Read(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
 	UsciI2cData data;
 	const UsciModule *usci = Usci_GetModule(bus);
 	
-	while (*usci->stat & UCBBUSY);
+	while ((*usci->stat & UCBBUSY) != 0);
+	data.usci = usci;
 	data.reg = reg;
 	data.buffer = buffer;
 	data.len = len;
@@ -205,6 +233,7 @@ bool I2c_Write(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
 	const UsciModule *usci = Usci_GetModule(bus);
 
 	while (*usci->stat & UCBBUSY);
+	data.usci = usci;
 	data.reg = reg;
 	data.buffer = buffer;
 	data.len = len;

@@ -32,7 +32,11 @@
 #define USCI_H
 
 #include <msp430.h>
+#include <stdbool.h>
 #include <stdint.h>
+#include "platform/msp430.h"
+
+//#define USE_SERIAL_FIFO 1
 
 #define USCI_MODULE_COUNT	2
 
@@ -93,6 +97,12 @@ typedef struct {
  * @returns true if transaction has finished and we can wake up the MCU
  */
 typedef bool (*UsciHandler)(const UsciModule *usci, void *data);
+
+typedef struct {
+	UsciHandler tx_handler; ///< Transmit handler. Note, that for I2C it's called for both TX and RX
+	UsciHandler rx_handler; ///< Receive handler. Note, that for I2C it handles bus state change interrupts
+	void *data;				///< Bus-specific data
+} UsciData;
 
 /**
  * @param usci - Index of requested USCI module
