@@ -23,7 +23,9 @@
 
 #include <msp430.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include "platform/msp430.h"
+#include "platform/msp430/port.h"
 
 void Msp430_InitClock()
 {
@@ -46,8 +48,8 @@ uint16_t Msp430_GetSupplyVoltage(void)
 {
 	uint16_t raw_value;
 	// first attempt - measure Vcc/2 with 1.5V reference (Vcc < 3V )
-	ADC10CTL0 = SREF_1 | REFON | ADC10SHT_2 | ADC10SR | ADC10ON;
-	ADC10CTL1 = INCH_11 | SHS_0 | ADC10DIV_0 | ADC10SSEL_0;
+	ADC10CTL0 = SREF_1 | REFON | ADC10SHT_3 | ADC10SR | ADC10ON;
+	ADC10CTL1 = INCH_11 | SHS_0 | ADC10DIV_1 | ADC10SSEL_0;
 	// start conversion and wait for it
 	ADC10CTL0 |= ENC | ADC10SC;
 	while (ADC10CTL1 & ADC10BUSY) ;
@@ -65,7 +67,7 @@ uint16_t Msp430_GetSupplyVoltage(void)
 		raw_value = ADC10MEM;
 		// end conversion and turn off ADC
 		ADC10CTL0 &= ~ENC;
-		ADC10CTL0 &= ~(ADC10IFG | ADC10ON | REFON);
+		ADC10CTL0 &= ~(ADC10IFG | ADC10ON | REF2_5V | REFON);
 		// convert value to mV
 		return ((uint32_t)raw_value * 5000) / 1024;
 	} else
