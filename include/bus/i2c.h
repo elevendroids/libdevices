@@ -42,7 +42,7 @@ typedef enum {
 	I2C_SPEED_STANDARD,	// SCL = 100kHz
 	I2C_SPEED_FAST,		// SCL = 400kHz
 	I2C_SPEED_HIGH		// SCL = 1.7MHz
-} I2cSpeed;
+} i2c_speed_t;
 
 /** @brief Structure which binds I2C bus instance with a slave device */
 typedef struct {
@@ -56,20 +56,20 @@ typedef struct {
  * @param speed - bus speed
  * @return bus handle or zero if failed
  */
-int I2c_Open(uint8_t device, I2cSpeed speed);
+bool i2c_open(i2c_t *bus, uint8_t device, i2c_speed_t speed);
 
 /**
  * @brief Close/Finalize I2C bus
  * @param bus - bus handle
  */
-void I2c_Close(int bus);
+void i2c_close(i2c_t *bus);
 
 /**
  * @brief Set I2C bus speed
  * @param bus - bus handle
  * @param speed - bus speed
  */
-void I2c_SetSpeed(int bus, I2cSpeed speed);
+void i2c_set_speed(i2c_t *bus, i2c_speed_t speed);
 
 /**
  * @brief Read data from a slave device
@@ -80,7 +80,7 @@ void I2c_SetSpeed(int bus, I2cSpeed speed);
  * @param len - RX buffer length
  * @return true on success
  */
-bool I2c_Read(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len);
+bool i2c_read(i2c_t *bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len);
 
 /**
  * @brief Write data to a slave device
@@ -91,7 +91,7 @@ bool I2c_Read(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len);
  * @param len - TX buffer length
  * @return true on success
  */
-bool I2c_Write(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len);
+bool i2c_write(i2c_t *bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len);
 
 /** 
  * @brief Read one byte from a slave device
@@ -101,9 +101,9 @@ bool I2c_Write(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
  * @param value - destination pointer
  * @return true on success
  */
-inline static bool I2c_ReadByte(int bus, uint8_t address, uint8_t reg, uint8_t *value)
+inline static bool i2c_read_byte(i2c_t *bus, uint8_t address, uint8_t reg, uint8_t *value)
 {
-	return I2c_Read(bus, address, reg, value, sizeof(*value));
+	return i2c_read(bus, address, reg, value, sizeof(*value));
 }
 
 /** 
@@ -114,9 +114,9 @@ inline static bool I2c_ReadByte(int bus, uint8_t address, uint8_t reg, uint8_t *
  * @param value - destination pointer
  * @return true on success
  */
-inline static bool I2c_ReadWord(int bus, uint8_t address, uint8_t reg, uint16_t *value)
+inline static bool i2c_read_word(i2c_t *bus, uint8_t address, uint8_t reg, uint16_t *value)
 {
-	return I2c_Read(bus, address, reg, value, sizeof(*value));
+	return i2c_read(bus, address, reg, value, sizeof(*value));
 }
 
 /** 
@@ -127,9 +127,9 @@ inline static bool I2c_ReadWord(int bus, uint8_t address, uint8_t reg, uint16_t 
  * @param value - value to be written
  * @return true on success
  */
-inline static bool I2c_WriteByte(int bus, uint8_t address, uint8_t reg, uint8_t value)
+inline static bool i2c_write_byte(i2c_t *bus, uint8_t address, uint8_t reg, uint8_t value)
 {
-	return I2c_Write(bus, address, reg, &value, sizeof(value));
+	return i2c_write(bus, address, reg, &value, sizeof(value));
 }
 
 /** 
@@ -140,9 +140,9 @@ inline static bool I2c_WriteByte(int bus, uint8_t address, uint8_t reg, uint8_t 
  * @param value - value to be written
  * @return true on success
  */
-inline static bool I2c_WriteWord(int bus, uint8_t address, uint8_t reg, uint16_t value)
+inline static bool i2c_write_word(i2c_t *bus, uint8_t address, uint8_t reg, uint16_t value)
 {
-	return I2c_Write(bus, address, reg, &value, sizeof(value));
+	return i2c_write(bus, address, reg, &value, sizeof(value));
 }
 
 #endif /* I2C_H */

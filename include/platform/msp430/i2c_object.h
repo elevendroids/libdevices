@@ -4,8 +4,8 @@
 #include "usci.h"
 
 typedef struct i2c_tag {
-	int bus;
-	const UsciModule usci;
+	int device;
+	const UsciModule *usci;
 } i2c_t;
 
 #endif

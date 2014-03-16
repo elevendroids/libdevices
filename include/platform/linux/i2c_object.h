@@ -3,7 +3,7 @@
 
 
 typedef struct i2c_tag {
-	int bus;
+	int handle;
 } i2c_t;
 
 #endif

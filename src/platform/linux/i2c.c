@@ -34,19 +34,20 @@
 
 #define I2C_BUS_DEVICE "/dev/i2c-%d"
 
-int I2c_Open(uint8_t device, I2cSpeed speed)
+bool i2c_open(i2c_t *bus, uint8_t device, i2c_speed_t speed)
 {
 	char file_name[255];
 	snprintf(file_name, sizeof(file_name), I2C_BUS_DEVICE, device);
-	return open(file_name, O_RDWR);
+	bus->handle = open(file_name, O_RDWR);
+	return true;
 }
 
-void I2c_Close(int bus)
+void i2c_close(i2c_t *bus)
 {
-	close(bus);
+	close(bus->handle);
 }
 
-bool I2c_Read(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
+bool i2c_read(i2c_t *bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
 {
 	int msg_count = 0;
 	struct i2c_rdwr_ioctl_data data;
@@ -69,10 +70,10 @@ bool I2c_Read(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
 	data.msgs = messages;
 	data.nmsgs = msg_count;
 
-	return (ioctl(bus, I2C_RDWR, &data) == 0);
+	return (ioctl(bus->handle, I2C_RDWR, &data) == 0);
 }
 
-bool I2c_Write(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
+bool i2c_write(i2c_t *bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
 {
 	int msg_count = 0;
 	struct i2c_rdwr_ioctl_data data;
@@ -95,7 +96,7 @@ bool I2c_Write(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
 	data.msgs = messages;
 	data.nmsgs = msg_count;
 
-	return (ioctl(bus, I2C_RDWR, &data) == 0);
+	return (ioctl(bus->handle, I2C_RDWR, &data) == 0);
 }
 
 

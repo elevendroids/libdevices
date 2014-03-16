@@ -105,7 +105,7 @@ static bool usci_i2c_tx_handler(UsciI2cData *data)
 	return result;
 }
 
-static bool UsciB0_I2cXmitHandler(const UsciModule *dummy, void *data)
+static bool usci_i2c_txrx_handler(const UsciModule *dummy, void *data)
 {
 	UsciI2cData *xmit_data = (UsciI2cData *)data;
 	const UsciModule *usci = xmit_data->usci;
@@ -119,7 +119,7 @@ static bool UsciB0_I2cXmitHandler(const UsciModule *dummy, void *data)
 	return false;
 }
 
-static bool I2c_RxHandler(const UsciModule *dummy, void *data)
+static bool usci_i2c_state_handler(const UsciModule *dummy, void *data)
 {
 	bool result = false;
 	const UsciModule *usci = ((UsciI2cData *)data)->usci;
@@ -131,7 +131,8 @@ static bool I2c_RxHandler(const UsciModule *dummy, void *data)
 	return result;
 } 
 
-int I2c_Open(uint8_t device, I2cSpeed speed)
+
+bool i2c_open(i2c_t *bus, uint8_t device, i2c_speed_t speed)
 {
 	const UsciModule *usci;
 	uint16_t prescale;
@@ -141,10 +142,12 @@ int I2c_Open(uint8_t device, I2cSpeed speed)
 	else // there's no highspeed mode available
 		prescale = (MSP430_CYCLES_PER_MS / 400);
 
-	Usci_SetHandlers(device, &UsciB0_I2cXmitHandler, &I2c_RxHandler);
+	Usci_SetHandlers(device, &usci_i2c_txrx_handler, &usci_i2c_state_handler);
 
 	usci = Usci_GetModule(device);
-
+	bus->device = device;
+	bus->usci = usci;
+	
 	Msp430_SetPinFunction(usci->pins.scl, MSP430_PIN_FUNCTION_1 | MSP430_PIN_FUNCTION_2);
 	Msp430_SetPinFunction(usci->pins.sda, MSP430_PIN_FUNCTION_1 | MSP430_PIN_FUNCTION_2);
 
@@ -157,44 +160,43 @@ int I2c_Open(uint8_t device, I2cSpeed speed)
 
 	*usci->ie |= usci->flags.txie | usci->flags.rxie;
 	*usci->i2cie |= UCNACKIE;
-	
+
 	_EINT();
 
-	return device; 
+	return true; 
 }
 
-void I2c_Close(int bus)
+void i2c_close(i2c_t *bus)
 {
-	const UsciModule *usci = Usci_GetModule(bus);
+	const UsciModule *usci = bus->usci;
 	*usci->ctl1 = UCSWRST;
 
 	Msp430_SetPinFunction(usci->pins.scl, MSP430_PIN_FUNCTION_NORMAL);
 	Msp430_SetPinFunction(usci->pins.sda, MSP430_PIN_FUNCTION_NORMAL);
 
-	Usci_SetHandlers(bus, NULL, NULL);
+	Usci_SetHandlers(bus->device, NULL, NULL);
 }
 
 
-void I2c_SetSpeed(int bus, I2cSpeed speed)
+void i2c_set_speed(i2c_t *bus, i2c_speed_t speed)
 {
 	// Prescale value = SMCLK(kHz) / SCL(kHz)
 	uint16_t prescale;
-	const UsciModule *usci;
+	const UsciModule *usci = bus->usci;
 
 	if (speed == I2C_SPEED_STANDARD)
 		prescale = (MSP430_CYCLES_PER_MS / 100);
 	else // there's no highspeed mode available
 		prescale = (MSP430_CYCLES_PER_MS / 400);
 
-	usci = Usci_GetModule(bus);
 	*usci->br0 = prescale;
 	*usci->br1 = 0x00;
 }
 
-bool I2c_Read(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
+bool i2c_read(i2c_t *bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
 {
 	UsciI2cData data;
-	const UsciModule *usci = Usci_GetModule(bus);
+	const UsciModule *usci = bus->usci;
 	
 	while ((*usci->stat & UCBBUSY) != 0);
 	data.usci = usci;
@@ -202,7 +204,7 @@ bool I2c_Read(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
 	data.buffer = buffer;
 	data.len = len;
 	data.dir = I2C_DIR_READ;
-	Usci_SetData(bus, &data);
+	Usci_SetData(bus->device, &data);
 	
 	*usci->i2csa = address;
 	if (reg == I2C_REGISTER_NONE) {
@@ -223,14 +225,14 @@ bool I2c_Read(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
 		_EINT();
 //	while (UCB0STAT & UCBBUSY) ;
 
-	Usci_SetData(bus, NULL);
+	Usci_SetData(bus->device, NULL);
 	return (data.len == 0);
 }
 
-bool I2c_Write(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
+bool i2c_write(i2c_t *bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
 {
 	UsciI2cData data;
-	const UsciModule *usci = Usci_GetModule(bus);
+	const UsciModule *usci = bus->usci;
 
 	while (*usci->stat & UCBBUSY);
 	data.usci = usci;
@@ -238,7 +240,7 @@ bool I2c_Write(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
 	data.buffer = buffer;
 	data.len = len;
 	data.dir = I2C_DIR_WRITE;
-	Usci_SetData(bus, &data);
+	Usci_SetData(bus->device, &data);
 	
 	*usci->i2csa = address;
 	*usci->ctl1 |= UCTR | UCTXSTT;
@@ -250,7 +252,7 @@ bool I2c_Write(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
 		_EINT();
 //	while (UCB0STAT & UCBBUSY) ;
 
-	Usci_SetData(bus, NULL);
+	Usci_SetData(bus->device, NULL);
 	return (data.len == 0);
 
 }
