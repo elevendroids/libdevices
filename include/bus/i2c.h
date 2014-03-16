@@ -33,6 +33,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "i2c_object.h"
 
 #define I2C_REGISTER_NONE	255
 
@@ -102,7 +103,7 @@ bool I2c_Write(int bus, uint8_t address, uint8_t reg, void *buffer, uint8_t len)
  */
 inline static bool I2c_ReadByte(int bus, uint8_t address, uint8_t reg, uint8_t *value)
 {
-	return I2c_Read(bus, address, reg, &value, sizeof(*value));
+	return I2c_Read(bus, address, reg, value, sizeof(*value));
 }
 
 /** 
@@ -115,7 +116,7 @@ inline static bool I2c_ReadByte(int bus, uint8_t address, uint8_t reg, uint8_t *
  */
 inline static bool I2c_ReadWord(int bus, uint8_t address, uint8_t reg, uint16_t *value)
 {
-	return I2c_Read(bus, address, reg, &value, sizeof(*value));
+	return I2c_Read(bus, address, reg, value, sizeof(*value));
 }
 
 /** 
