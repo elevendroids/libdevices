@@ -28,6 +28,8 @@ SIZE=$(PREFIX)size
 STRIP=$(PREFIX)strip
 DOXYGEN=doxygen
 
+INCLUDES +=-Iinclude/platform/$(PLATFORM)
+
 CFLAGS=--std=c99 -Wall -pedantic -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES)
 CXXFLAGS=--std=c++11 -Wall -pedantic -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES)
 LDFLAGS=-Wl,-Map=$(TARGET).map
@@ -125,7 +127,7 @@ clean:
 
 dump:
 	echo "(OBJDUMP): $(TARGET)$(TARGET_LIB)"
-	$(OBJDUMP) -g -d $(TARGET)$(TARGET_LIB) > $(TARGET)$(TARGET_LIB).dump
+	$(OBJDUMP) -g -d -S $(TARGET)$(TARGET_LIB) > $(TARGET)$(TARGET_LIB).dump
 
 strip:
 	echo "(STRIP): $(TARGET)$(TARGET_LIB)"
