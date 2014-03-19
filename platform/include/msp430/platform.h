@@ -20,11 +20,12 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 */
-#ifndef _MSP430_H
-#define _MSP430_H
+#ifndef _PLATFORM_H
+#define _PLATFORM_H
 
 #include <msp430.h>
 #include <stdint.h>
+#include "gpio_pin.h"
 
 #ifndef F_CPU
 #define F_CPU 1000000UL
@@ -66,37 +67,35 @@
 	#define MSP430_PORT_INT_COUNT	8
 #endif
 
+#define MSP430_PIN_FUNCTION_NORMAL	0x00
+#define MSP430_PIN_FUNCTION_1		0x01
+#define MSP430_PIN_FUNCTION_2		0x02
+
 /*
  * MCU pin definitions 
  *
  */
 #ifdef __MSP430G2553__
-	#define UCA0RXD		1
-	#define UCA0TXD		2
+	#define UCA0RXD		P1_1
+	#define UCA0TXD		P1_2
 	
-	#define UCA0SOMI	1
-	#define UCA0SIMO	2
-	#define UCA0STE		5
-	#define UCA0CLK		4
+	#define UCA0SOMI	P1_1
+	#define UCA0SIMO	P1_2
+	#define UCA0STE		P1_5
+	#define UCA0CLK		P1_4
 
-	#define UCB0SCL		6
-	#define UCB0SDA		7
+	#define UCB0SCL		P1_6
+	#define UCB0SDA		P1_7
 
-	#define UCB0SOMI	6
-	#define UCB0SIMO	7
-	#define UCB0STE		4
-	#define UCB0CLK		5
+	#define UCB0SOMI	P1_6
+	#define UCB0SIMO	P1_7
+	#define UCB0STE		P1_4
+	#define UCB0CLK		P1_5
 #endif
 
-#define MSP430_PIN_FUNCTION_NORMAL	0x00
-#define MSP430_PIN_FUNCTION_1		0x01
-#define MSP430_PIN_FUNCTION_2		0x02
-
-void Msp430_InitClock();
+void Msp430_InitClock(void);
 
 uint16_t Msp430_GetSupplyVoltage(void);
 
-void Msp430_SetPinFunction(unsigned int pin, unsigned int mode);
-
-#endif /* _MSP430_H */
+#endif /* _PLATFORM_H */
 

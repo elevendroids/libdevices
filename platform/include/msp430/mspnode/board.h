@@ -1,6 +1,6 @@
 /**
  *
- * @file mspnode.h
+ * @file board.h
  * @author Michal Potrzebicz
  * @date 2014-01-06
  *
@@ -27,8 +27,8 @@
  *
  */
 
-#ifndef _MSPNODE_H
-#define _MSPNODE_H
+#ifndef _BOARD_H
+#define _BOARD_H
 
 #define LED_ERROR	16 // P3.0
 #define LED_STATUS_1	17 // P3.1

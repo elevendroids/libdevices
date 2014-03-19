@@ -36,7 +36,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include "digital_io.h"
+#include "gpio.h"
 #include "bus/i2c.h"
 #include "platform/msp430.h"
 #include "platform/msp430/usci.h"
@@ -148,8 +148,8 @@ bool i2c_open(i2c_t *bus, uint8_t device, i2c_speed_t speed)
 	bus->device = device;
 	bus->usci = usci;
 	
-	Msp430_SetPinFunction(usci->pins.scl, MSP430_PIN_FUNCTION_1 | MSP430_PIN_FUNCTION_2);
-	Msp430_SetPinFunction(usci->pins.sda, MSP430_PIN_FUNCTION_1 | MSP430_PIN_FUNCTION_2);
+	pin_init_function(usci->pins.scl, MSP430_PIN_FUNCTION_1 | MSP430_PIN_FUNCTION_2);
+	pin_init_function(usci->pins.sda, MSP430_PIN_FUNCTION_1 | MSP430_PIN_FUNCTION_2);
 
 	*usci->ctl1 = UCSSEL_2 | UCSWRST;
 	*usci->ctl0 = UCMST | UCMODE_3 | UCSYNC;
@@ -171,8 +171,8 @@ void i2c_close(i2c_t *bus)
 	const UsciModule *usci = bus->usci;
 	*usci->ctl1 = UCSWRST;
 
-	Msp430_SetPinFunction(usci->pins.scl, MSP430_PIN_FUNCTION_NORMAL);
-	Msp430_SetPinFunction(usci->pins.sda, MSP430_PIN_FUNCTION_NORMAL);
+	pin_init_function(usci->pins.scl, MSP430_PIN_FUNCTION_NORMAL);
+	pin_init_function(usci->pins.sda, MSP430_PIN_FUNCTION_NORMAL);
 
 	Usci_SetHandlers(bus->device, NULL, NULL);
 }

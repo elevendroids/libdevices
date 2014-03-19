@@ -1,5 +1,5 @@
-#ifndef _I2C_OBJECT_H
-#define I2C_OBJECT_H
+#ifndef _PLATFORM_I2C_H
+#define _PLATFORM_I2C_H
 
 #include "usci.h"
 

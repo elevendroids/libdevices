@@ -1,38 +1,40 @@
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <msp430.h>
 #include "platform/msp430.h"
-#include "digital_io.h"
-#include "platform/msp430/port.h"
+#include "gpio.h"
 
 #ifdef MSP430_PORT_INT_COUNT
 static volatile PinIntCallback pin_int_callbacks[MSP430_PORT_INT_COUNT];
 #endif
 
-void Pin_AttachInterrupt(unsigned int pin, PinIntCallback callback, unsigned int mode)
+void pin_attach_interrupt(gpio_pin_t *pin, PinIntCallback callback, GpioIrqEdge mode)
 {
 	uint8_t mask;
-	const Msp430Port *port = Msp430_GetPinPort(pin, &mask);
+	const gpio_t *port = pin->port;
+
 	if (port->ie) {
 		_DINT();
 		*port->ie |= mask;
-		if (mode == PIN_INT_MODE_FALLING)
+		if (mode == EDGE_FALLING)
 			*port->ies |= mask;
 		else
 			*port->ies &= ~mask;
 		*port->ifg &= ~mask;
-		pin_int_callbacks[pin] = callback;
+//		pin_int_callbacks[pin] = callback;
 		_EINT();
 	}
 }
 
-void Pin_DetachInterrupt(unsigned int pin)
+void pin_detach_interrupt(gpio_pin_t *pin)
 {
 	uint8_t mask;
-	const Msp430Port *port = Msp430_GetPinPort(pin, &mask);
+	const gpio_t *port = pin->port;
+
 	if (port->ie) {
 		_DINT();
-		pin_int_callbacks[pin] = NULL;
+//		pin_int_callbacks[pin] = NULL;
 		*port->ie &= ~mask;
 		*port->ifg &= ~mask;
 		_EINT();

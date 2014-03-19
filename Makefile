@@ -30,8 +30,11 @@ DOXYGEN=doxygen
 
 INCLUDES +=-Iinclude/platform/$(PLATFORM)
 
-CFLAGS=--std=c99 -Wall -pedantic -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES)
-CXXFLAGS=--std=c++11 -Wall -pedantic -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES)
+C_WARNINGS=-Wall -Wstrict-prototypes
+CXX_WARNINGS=-Wall
+
+CFLAGS=--std=c99 $(C_WARNINGS) -pedantic -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES)
+CXXFLAGS=--std=c++11 $(CXX_WARNINGS) -pedantic -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES)
 LDFLAGS=-Wl,-Map=$(TARGET).map
 
 ifneq ($(RELEASE),)
@@ -92,9 +95,11 @@ ifeq ($(PLATFORM),linux)
 	LIBS += -lstdc++
 endif
 
+OUTDIR=out/$(PLATFORM)/$(BOARD)
+
 OBJECTS=$(patsubst %.c, %.o, $(patsubst %.cpp, %.o, $(SOURCES)))
 
-all: $(SOURCES) $(TARGET) $(TARGET_LIB)
+all: destdir $(SOURCES) $(TARGET) $(TARGET_LIB)
 
 $(TARGET): $(OBJECTS)
 	echo "(LD): $@"
@@ -121,13 +126,16 @@ $(TARGET_LIB): $(OBJECTS)
 .SILENT:
 .PHONY:	clean
 
+destdir:
+	mkdir -p $(OUTDIR)
+
 clean:
 	echo "Cleaning up..."
 	rm -rf $(OBJECTS) $(TARGET) $(TARGET_LIB) *.dump *.map
 
 dump:
 	echo "(OBJDUMP): $(TARGET)$(TARGET_LIB)"
-	$(OBJDUMP) -g -d -S $(TARGET)$(TARGET_LIB) > $(TARGET)$(TARGET_LIB).dump
+	$(OBJDUMP) -g -d $(TARGET)$(TARGET_LIB) > $(TARGET)$(TARGET_LIB).dump
 
 strip:
 	echo "(STRIP): $(TARGET)$(TARGET_LIB)"

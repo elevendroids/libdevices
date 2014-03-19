@@ -36,7 +36,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "platform/msp430.h"
-#include "platform/msp430/usci.h"
+#include "usci.h"
+#include "gpio_pin.h"
 
 static const UsciModule usci_modules[USCI_MODULE_COUNT] = {
 	// USCI A0

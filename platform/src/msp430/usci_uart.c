@@ -9,7 +9,7 @@
 
 #include "bus/serial.h"
 #include "platform/msp430.h"
-#include "serial_object.h"
+#include "gpio.h"
 #include "usci.h"
 #include "txprintf.h"
 
@@ -75,8 +75,8 @@ bool serial_open(serial_t *serial, int device, uint32_t baud, uint8_t char_size,
 
 	usci = Usci_GetModule(device);
 
-	Msp430_SetPinFunction(usci->pins.rxd, MSP430_PIN_FUNCTION_1 | MSP430_PIN_FUNCTION_2);
-	Msp430_SetPinFunction(usci->pins.txd, MSP430_PIN_FUNCTION_1 | MSP430_PIN_FUNCTION_2);
+	pin_init_function(usci->pins.rxd, MSP430_PIN_FUNCTION_1 | MSP430_PIN_FUNCTION_2);
+	pin_init_function(usci->pins.txd, MSP430_PIN_FUNCTION_1 | MSP430_PIN_FUNCTION_2);
 
 	*usci->ctl1 = UCSWRST | UCSSEL_2;
 	*usci->ctl0 = config;

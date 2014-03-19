@@ -35,8 +35,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "platform/msp430.h"
+#include "gpio.h"
 
-//#define USE_SERIAL_FIFO 1
+#define USE_SERIAL_FIFO		1
 
 #define USCI_MODULE_COUNT	2
 
@@ -79,14 +80,14 @@ typedef struct {
 
 	/// Module pins (MCU-specific)
 	struct {
-		const uint8_t scl;			///< I2C SCL pin
-		const uint8_t sda;			///< I2C SDA pin
-		const uint8_t somi;			///< SPI data in pin
-		const uint8_t simo;			///< SPI data out pin
-		const uint8_t ste;			///< SPI slave transmit enable pin
-		const uint8_t clk;			///< SPI clock pin
-		const uint8_t rxd;			///< UART RX pin
-		const uint8_t txd;			///< UART TX pin
+		const GpioPin scl;			///< I2C SCL pin
+		const GpioPin sda;			///< I2C SDA pin
+		const GpioPin somi;			///< SPI data in pin
+		const GpioPin simo;			///< SPI data out pin
+		const GpioPin ste;			///< SPI slave transmit enable pin
+		const GpioPin clk;			///< SPI clock pin
+		const GpioPin rxd;			///< UART RX pin
+		const GpioPin txd;			///< UART TX pin
 	} pins;
 } UsciModule;
 

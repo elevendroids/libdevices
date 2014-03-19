@@ -1,6 +1,6 @@
 /**
  *
- * @file launchpad.h
+ * @file board.h
  * @author Michal Potrzebicz
  * @date 2014-01-07
  *
@@ -27,12 +27,14 @@
  *
  */
 
-#ifndef _LAUNCHPAD_H
-#define _LAUNCHPAD_H
+#ifndef _BOARD_H
+#define _BOARD_H
 
-#define LED1	0 // P1.0
-#define LED2	6 // P1.6
+#include "platform_gpio.h"
 
-#define BUTTON	3 // P1.3
+#define LED1	P1_0 // P1.0
+#define LED2	P1_6 // P1.6
+
+#define BUTTON	P1_3 // P1.3
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef _SERIAL_OBJECT_H
-#define _SERIAL_OBJECT_H
+#ifndef _PLATFORM_SERIAL_H
+#define _PLATFORM_SERIAL_H
 
 #include "usci.h"
 #include "fifo.h"
