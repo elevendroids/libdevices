@@ -25,7 +25,6 @@
 
 #include <msp430.h>
 #include <stdint.h>
-#include "gpio_pin.h"
 
 #ifndef F_CPU
 #define F_CPU 1000000UL

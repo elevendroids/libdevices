@@ -2,9 +2,19 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "platform.h"
+#include "platform_gpio.h"
 #include "gpio.h"
-#include "gpio_map.h"
-#include "gpio_pin.h"
+
+static const gpio_t *gpio_ports[] = { 
+	 &P1
+#ifdef MSP430_HAS_PORT2
+	,&P2
+#endif
+#ifdef MSP430_HAS_PORT3
+	,&P3
+#endif
+};
+
 
 const gpio_t * port_init(int port_id)
 {

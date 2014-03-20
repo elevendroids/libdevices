@@ -2,7 +2,6 @@
 #define _GPIO_H
 
 #include "platform_gpio.h"
-#include "gpio_pin.h"
 
 typedef enum {
 	DIR_INPUT,

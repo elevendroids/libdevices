@@ -73,7 +73,7 @@ endif
 
 # Platform sections
 # Set toolchain options, flags etc.
-PLATFORM_DIR=$(LIBROOT)/target/src/$(PLATFORM)
+PLATFORM_DIR=$(LIBROOT)/target/$(PLATFORM)
 BOARD_DIR=$(PLATFORM_DIR)/$(BOARD)
 include $(PLATFORM_DIR)/platform.mk
 include $(BOARD_DIR)/board.mk

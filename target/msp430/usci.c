@@ -37,7 +37,7 @@
 #include <stdint.h>
 #include "platform.h"
 #include "usci.h"
-#include "gpio_pin.h"
+#include "platform_gpio.h"
 
 static const UsciModule usci_modules[USCI_MODULE_COUNT] = {
 	// USCI A0
