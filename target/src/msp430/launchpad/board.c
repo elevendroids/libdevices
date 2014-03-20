@@ -22,8 +22,8 @@
 */
 
 #include <stdarg.h>
-#include "platform/msp430.h"
-#include "board/launchpad.h"
+#include "platform.h"
+#include "board.h"
 
 void Board_Init(void)
 {

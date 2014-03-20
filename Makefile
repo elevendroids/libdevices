@@ -28,12 +28,12 @@ SIZE=$(PREFIX)size
 STRIP=$(PREFIX)strip
 DOXYGEN=doxygen
 
-INCLUDES +=-Iinclude/platform/$(PLATFORM)
+INCLUDES=-I$(LIBROOT)/include -I$(LIBROOT)/target/include/$(PLATFORM) -I$(LIBROOT)/target/include/$(PLATFORM)/$(BOARD)
 
 C_WARNINGS=-Wall -Wstrict-prototypes
 CXX_WARNINGS=-Wall
 
-CFLAGS=--std=c99 $(C_WARNINGS) -pedantic -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES)
+CFLAGS=--std=c99 $(C_WARNINGS) -pedantic -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES) -Wl,-gc-sections
 CXXFLAGS=--std=c++11 $(CXX_WARNINGS) -pedantic -ffunction-sections -fdata-sections -DPLATFORM_$(PLATFORM) $(INCLUDES)
 LDFLAGS=-Wl,-Map=$(TARGET).map
 
@@ -43,6 +43,7 @@ ifneq ($(RELEASE),)
 endif
 
 ifeq ($(TARGET_LIB),)
+	LIBS += -L$(LIBROOT) -ldevices
 	LDFLAGS +=-Wl,-gc-sections
 endif
 
@@ -57,14 +58,6 @@ ifeq ($(BOARD), beaglebone)
 	PLATFORM=linux
 endif
  
-ifeq ($(BOARD), launchpad)
-	PLATFORM=msp430
-	MCU=msp430g2553
-#	CFLAGS += -DF_CPU=1000000UL
-#	CFLAGS += -DF_CPU=8000000UL
-	CFLAGS += -DF_CPU=16000000UL
-endif
-
 ifeq ($(BOARD), mspnode)
 	PLATFORM=msp430
 	MCU=msp430g2553
@@ -78,18 +71,14 @@ endif
 
 #OUTDIR=.
 
-ifeq ($(PLATFORM),)
-$(error Board $(BOARD) is not valid)
-endif
-
 # Platform sections
 # Set toolchain options, flags etc.
-ifeq ($(PLATFORM),msp430)
-	PREFIX=msp430-
-	CFLAGS += -mmcu=$(MCU)
-	CXXFLAGS += -mmcu=$(MCU)
-	LDFLAGS += -mmcu=$(MCU)
-endif
+PLATFORM_DIR=$(LIBROOT)/target/src/$(PLATFORM)
+BOARD_DIR=$(PLATFORM_DIR)/$(BOARD)
+include $(PLATFORM_DIR)/platform.mk
+include $(BOARD_DIR)/board.mk
+
+INCLUDES += -I$(LIBROOT)/target/include/$(PLATFORM) -I$(LIBROOT)/target/include/$(PLATFORM)/$(BOARD)
 
 ifeq ($(PLATFORM),linux)
 	LIBS += -lstdc++
@@ -123,8 +112,12 @@ $(TARGET_LIB): $(OBJECTS)
 	echo "(CXX): $<"
 	$(CXX) -c $(CXXFLAGS) -o $@ $<
 
+test:
+	echo "CFLAGS: $(CFLAGS)"
+	echo "LDFLAGS: $(LDFLAGS)"
+
 .SILENT:
-.PHONY:	clean
+.PHONY:	clean test
 
 destdir:
 	mkdir -p $(OUTDIR)

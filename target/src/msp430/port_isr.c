@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <msp430.h>
-#include "platform/msp430.h"
+#include "platform.h"
 #include "gpio.h"
 
 #ifdef MSP430_PORT_INT_COUNT

@@ -1,8 +1,8 @@
 /**
  *
- * @file board.h
+ * @file board_config.h
  * @author Michal Potrzebicz
- * @date 2014-01-07
+ * @date 2014-01-06
  *
  * @section LICENSE
  *
@@ -27,14 +27,21 @@
  *
  */
 
-#ifndef _BOARD_H
-#define _BOARD_H
+#ifndef _BOARD_CONFIG_H
+#define _BOARD_CONFIG_H
 
-#include "platform_gpio.h"
+#define LED_ERROR	16 // P3.0
+#define LED_STATUS_1	17 // P3.1
+#define LED_STATUS_2	18 // P3.2
 
-#define LED1	P1_0 // P1.0
-#define LED2	P1_6 // P1.6
+#define A0		0 // P1.0
+#define A1		3 // P1.3
+#define A2		5 // P1.5
 
-#define BUTTON	P1_3 // P1.3
+#define D0		8 // P2.0
+#define D1		9 // P2.1
+#define D2		10 // P2.2
+#define D3		11 // P2.3
+#define D4		12 // P2.4
 
 #endif

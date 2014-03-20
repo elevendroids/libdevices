@@ -1,7 +1,7 @@
 #ifndef _GPIO_MAP_H
 #define _GPIO_MAP_H
 
-#include "platform/msp430.h"
+#include "platform.h"
 #include "gpio.h"
 
 static const gpio_t P1 = {

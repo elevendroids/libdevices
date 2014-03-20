@@ -8,7 +8,7 @@
 #include <stdarg.h>
 
 #include "bus/serial.h"
-#include "platform/msp430.h"
+#include "platform.h"
 #include "gpio.h"
 #include "usci.h"
 #include "txprintf.h"

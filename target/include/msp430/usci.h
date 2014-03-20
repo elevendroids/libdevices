@@ -34,7 +34,7 @@
 #include <msp430.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "platform/msp430.h"
+#include "platform.h"
 #include "gpio.h"
 
 #define USE_SERIAL_FIFO		1

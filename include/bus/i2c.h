@@ -33,7 +33,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "i2c_object.h"
+#include "platform_i2c.h"
 
 #define I2C_REGISTER_NONE	255
 

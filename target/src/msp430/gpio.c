@@ -1,7 +1,7 @@
 #include <msp430.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include "platform/msp430.h"
+#include "platform.h"
 #include "gpio.h"
 #include "gpio_map.h"
 #include "gpio_pin.h"

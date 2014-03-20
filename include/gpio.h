@@ -1,7 +1,7 @@
 #ifndef _GPIO_H
 #define _GPIO_H
 
-#include "gpio_object.h"
+#include "platform_gpio.h"
 #include "gpio_pin.h"
 
 typedef enum {

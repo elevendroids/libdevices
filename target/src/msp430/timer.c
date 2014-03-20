@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <limits.h>
-#include "platform/msp430.h"
+#include "platform.h"
 
 volatile static unsigned int miliseconds;
 volatile static unsigned int sleep_ms;

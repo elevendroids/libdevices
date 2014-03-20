@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "serial_object.h"
+#include "platform_serial.h"
 
 typedef enum serial_parity_tag {
 	PARITY_NONE,

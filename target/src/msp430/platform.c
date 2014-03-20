@@ -24,7 +24,7 @@
 #include <msp430.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "platform/msp430.h"
+#include "platform.h"
 
 void Msp430_InitClock()
 {

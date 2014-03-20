@@ -38,8 +38,8 @@
 #include <stddef.h>
 #include "gpio.h"
 #include "bus/i2c.h"
-#include "platform/msp430.h"
-#include "platform/msp430/usci.h"
+#include "platform.h"
+#include "usci.h"
 
 #define I2C_DIR_READ	0
 #define I2C_DIR_WRITE	1

@@ -35,7 +35,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "platform/msp430.h"
+#include "platform.h"
 #include "usci.h"
 #include "gpio_pin.h"
 

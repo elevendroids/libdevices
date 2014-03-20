@@ -21,7 +21,7 @@
 *
 */
 #include <msp430.h>
-#include "platform/msp430.h"
+#include "platform.h"
 
 void Delay_Us(unsigned int interval)
 {

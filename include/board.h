@@ -25,13 +25,8 @@
 
 #include <stdarg.h>
 
-#ifdef PLATFORM_MSP430
-#include "platform/msp430.h"
-#endif
-
-#ifdef PLATFORM_LINUX
-#include "platform/linux.h"
-#endif
+#include "board_config.h"
+#include "platform.h"
 
 extern void Board_Init(void); 
 extern void Board_Control(int request, ...);
