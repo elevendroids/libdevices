@@ -28,7 +28,7 @@ SIZE=$(PREFIX)size
 STRIP=$(PREFIX)strip
 DOXYGEN=doxygen
 
-INCLUDES=-I$(LIBROOT)/include -I$(LIBROOT)/target/include/$(PLATFORM) -I$(LIBROOT)/target/include/$(PLATFORM)/$(BOARD)
+INCLUDES=-I$(LIBROOT)/include
 
 C_WARNINGS=-Wall -Wstrict-prototypes
 CXX_WARNINGS=-Wall
@@ -47,30 +47,6 @@ ifeq ($(TARGET_LIB),)
 	LDFLAGS +=-Wl,-gc-sections
 endif
 
-# Board sections
-# Set appropriate platform, cpu/mcu etc.
-
-ifeq ($(BOARD), raspberry)
-	PLATFORM=linux
-endif
-
-ifeq ($(BOARD), beaglebone)
-	PLATFORM=linux
-endif
- 
-ifeq ($(BOARD), mspnode)
-	PLATFORM=msp430
-	MCU=msp430g2553
-	CFLAGS += -DF_CPU=16000000UL
-endif
-
-ifeq ($(BOARD), tinypad)
-	PLATFORM=msp430
-	MCU=msp430g2230
-endif
-
-#OUTDIR=.
-
 # Platform sections
 # Set toolchain options, flags etc.
 PLATFORM_DIR=$(LIBROOT)/target/$(PLATFORM)
@@ -78,11 +54,7 @@ BOARD_DIR=$(PLATFORM_DIR)/$(BOARD)
 include $(PLATFORM_DIR)/platform.mk
 include $(BOARD_DIR)/board.mk
 
-INCLUDES += -I$(LIBROOT)/target/include/$(PLATFORM) -I$(LIBROOT)/target/include/$(PLATFORM)/$(BOARD)
-
-ifeq ($(PLATFORM),linux)
-	LIBS += -lstdc++
-endif
+INCLUDES += -I$(PLATFORM_DIR) -I$(BOARD_DIR)
 
 OUTDIR=out/$(PLATFORM)/$(BOARD)
 

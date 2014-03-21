@@ -1,19 +1,17 @@
+#include <stdbool.h>
 #include "board.h"
 #include "delay.h"
-#include "digital_io.h"
-#include "board/launchpad.h"
+#include "gpio.h"
 
 int main(void) {
+	gpio_pin_t led;
 	Board_Init();
-	Pin_SetMode(LED1, PIN_MODE_OUTPUT);
-	Pin_SetMode(LED2, PIN_MODE_OUTPUT);
+	pin_init(&led, LED1, DIR_OUTPUT);
 
 	while (1) {
-		Pin_Toggle(LED1);
-		Delay_Ms(500);
-		Pin_Toggle(LED2);
+		pin_toggle(&led);
 		Delay_Ms(500);
 	}
-	
+
 	return 0;
 }

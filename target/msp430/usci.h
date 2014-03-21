@@ -80,14 +80,14 @@ typedef struct {
 
 	/// Module pins (MCU-specific)
 	struct {
-		const GpioPin scl;			///< I2C SCL pin
-		const GpioPin sda;			///< I2C SDA pin
-		const GpioPin somi;			///< SPI data in pin
-		const GpioPin simo;			///< SPI data out pin
-		const GpioPin ste;			///< SPI slave transmit enable pin
-		const GpioPin clk;			///< SPI clock pin
-		const GpioPin rxd;			///< UART RX pin
-		const GpioPin txd;			///< UART TX pin
+		const PinId scl;			///< I2C SCL pin
+		const PinId sda;			///< I2C SDA pin
+		const PinId somi;			///< SPI data in pin
+		const PinId simo;			///< SPI data out pin
+		const PinId ste;			///< SPI slave transmit enable pin
+		const PinId clk;			///< SPI clock pin
+		const PinId rxd;			///< UART RX pin
+		const PinId txd;			///< UART TX pin
 	} pins;
 } UsciModule;
 

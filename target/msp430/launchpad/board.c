@@ -27,8 +27,8 @@
 
 void Board_Init(void)
 {
-	// disable watchdog
-	WDTCTL = WDTPW + WDTHOLD;
+	// watchdog disabled in linker
+	//	WDTCTL = WDTPW + WDTHOLD;
 	
 	// initialize nonexisitng ports
 	P3DIR = 0xFF;

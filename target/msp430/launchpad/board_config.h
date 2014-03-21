@@ -37,4 +37,25 @@
 
 #define BUTTON	P1_3 // P1.3
 
+static const PinId gpio_irq_pins[] = {
+	P1_0,
+	P1_1,
+	P1_2,
+	P1_3,
+	P1_4,
+	P1_5,
+	P1_6,
+	P1_7,
+	P2_0,
+	P2_1,
+	P2_2,
+	P2_3,
+	P2_4,
+	P2_5,
+	P2_6,
+	P2_7,
+	NC
+};
+
+
 #endif

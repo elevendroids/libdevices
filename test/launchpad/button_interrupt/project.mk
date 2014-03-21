@@ -1,6 +1,6 @@
-INCLUDES=-I../../../include
 SOURCES=main.c
-LIBS+=-L../../../ -ldevices
+LIBROOT=../../..
+PLATFORM=msp430
 BOARD=launchpad
 TARGET=button_interrupt
 

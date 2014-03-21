@@ -1,19 +1,29 @@
+#include <stdbool.h>
 #include "board.h"
 #include "delay.h"
-#include "digital_io.h"
-#include "board/launchpad.h"
+#include "gpio.h"
 
-void on_button_int() {
-	Pin_Toggle(LED1);
+gpio_pin_t led;
+gpio_pin_t button;
+
+bool on_gpio_irq(PinId pin)
+{
+	if (pin == BUTTON)
+		pin_toggle(&led);
+	return false;
 }
 
 int main(void) {
 	Board_Init();
-	Pin_SetMode(LED1, PIN_MODE_OUTPUT);
-	Pin_SetMode(BUTTON, PIN_MODE_INPUT | PIN_MODE_PULLUP);
-	Pin_AttachInterrupt(BUTTON, &on_button_int, PIN_INT_MODE_FALLING);
+	pin_init(&led, LED1, DIR_OUTPUT);
+	pin_init(&button, BUTTON, DIR_INPUT);
+	pin_set_mode(&button, MODE_PULLUP);
+	pin_set(&led, true);
 
-	while (1);
+	gpio_set_irq_handler(&on_gpio_irq);	
+	pin_attach_interrupt(&button, EDGE_FALLING);
+
+	LPM3;
 	
 	return 0;
 }

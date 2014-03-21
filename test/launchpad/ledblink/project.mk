@@ -1,6 +1,6 @@
-INCLUDES=-I../../../include
 SOURCES=ledblink.c
-LIBS+=-L../../../ -ldevices
+LIBROOT=../../..
 BOARD=launchpad
+PLATFORM=msp430
 TARGET=ledblink
 
